@@ -13,7 +13,6 @@ import {z} from 'genkit';
 
 const GenerateTradingIdeaInputSchema = z.object({
   chartData: z.string().describe('Chart data as a JSON string.'),
-  newsData: z.string().describe('News data as a JSON string.'),
 });
 export type GenerateTradingIdeaInput = z.infer<typeof GenerateTradingIdeaInputSchema>;
 
@@ -34,10 +33,9 @@ const prompt = ai.definePrompt({
   name: 'generateTradingIdeaPrompt',
   input: {schema: GenerateTradingIdeaInputSchema},
   output: {schema: GenerateTradingIdeaOutputSchema},
-  prompt: `You are an expert trading signal generator. Analyze the provided chart data and news data to generate a structured trading idea.
+  prompt: `You are an expert trading signal generator. Analyze the provided chart data to generate a structured trading idea.
 
 Chart Data: {{{chartData}}}
-News Data: {{{newsData}}}
 
 Provide the trading idea in the following JSON format:
 {

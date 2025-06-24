@@ -1,15 +1,4 @@
-import type { NewsArticle, ChartDataPoint } from '@/types';
-
-export const getNewsData = async (): Promise<NewsArticle[]> => {
-  // Mock data, in a real app this would fetch from an API like NewsAPI
-  return Promise.resolve([
-    { id: '1', source: 'Bloomberg', title: 'Tech Stocks Rally on Positive Inflation Report', url: 'https://www.bloomberg.com', publishedAt: '2023-10-27T14:00:00Z' },
-    { id: '2', source: 'Reuters', title: 'Federal Reserve Hints at Pausing Rate Hikes', url: 'https://www.reuters.com', publishedAt: '2023-10-27T13:30:00Z' },
-    { id: '3', source: 'Financial Times', title: 'Corporate Earnings Exceed Expectations in Q3', url: 'https://www.ft.com', publishedAt: '2023-10-27T12:00:00Z' },
-    { id: '4', source: 'Wall Street Journal', title: 'Global Supply Chain Pressures Begin to Ease', url: 'https://www.wsj.com', publishedAt: '2023-10-27T11:45:00Z' },
-    { id: '5', source: 'CNBC', title: 'Energy Sector Sees Volatility Amid Geopolitical Tensions', url: 'https://www.cnbc.com', publishedAt: '2023-10-27T10:10:00Z' },
-  ]);
-};
+import type { ChartDataPoint } from '@/types';
 
 export const getChartData = async (): Promise<ChartDataPoint[]> => {
   // Mock data, in a real app this would fetch from an API like Twelve Data

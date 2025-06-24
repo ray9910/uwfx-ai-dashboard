@@ -18,20 +18,16 @@ import {
   Bot,
   CandlestickChart,
   CreditCard,
-  Newspaper,
   BookOpen,
 } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { ChartCard } from './dashboard/chart-card';
-import { TimelineWidgetCard } from './dashboard/timeline-widget-card';
 import { TradeIdeaGeneratorCard } from './dashboard/trade-idea-generator-card';
 import { TradeJournalCard } from './dashboard/trade-journal-card';
-import { NewsCard } from './dashboard/news-card';
 import { useToast } from '@/hooks/use-toast';
-import type { TradeIdea, NewsArticle } from '@/types';
+import type { TradeIdea } from '@/types';
 import type { GenerateTradingIdeaOutput } from '@/ai/flows/generate-trading-idea';
 import { generateIdeaAction } from '@/lib/actions';
-import { getNewsData } from '@/lib/data';
 import { Separator } from './ui/separator';
 import { Progress } from './ui/progress';
 
@@ -40,14 +36,9 @@ export function DashboardPage() {
   
   const [tradeJournal, setTradeJournal] = React.useState<TradeIdea[]>([]);
   const [credits, setCredits] = React.useState(10);
-  const [news, setNews] = React.useState<NewsArticle[]>([]);
   
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [generatedIdea, setGeneratedIdea] = React.useState<GenerateTradingIdeaOutput | null>(null);
-
-  React.useEffect(() => {
-    getNewsData().then(setNews);
-  }, []);
 
   const handleGenerateIdea = async () => {
     if (credits <= 0) {
@@ -122,12 +113,6 @@ export function DashboardPage() {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#" tooltip="News Feed">
-                <Newspaper />
-                <span>News Feed</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
               <SidebarMenuButton href="#" tooltip="AI Settings">
                 <Bot />
                 <span>AI Settings</span>
@@ -179,8 +164,6 @@ export function DashboardPage() {
                 onGenerate={handleGenerateIdea}
                 onSave={handleSaveToJournal}
               />
-              <TimelineWidgetCard className="md:col-span-1" />
-              <NewsCard news={news} className="md:col-span-1" />
               <TradeJournalCard journal={tradeJournal} className="md:col-span-2" />
             </div>
           </div>

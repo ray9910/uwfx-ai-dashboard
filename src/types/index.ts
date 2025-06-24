@@ -7,14 +7,6 @@ export type TradeIdea = GenerateTradingIdeaOutput & {
   timestamp: string;
 };
 
-export type NewsArticle = {
-  id: string;
-  source: string;
-  title: string;
-  url: string;
-  publishedAt: string;
-};
-
 export type ChartDataPoint = {
   date: string;
   price: number;

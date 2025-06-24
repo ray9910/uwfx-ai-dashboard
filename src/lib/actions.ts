@@ -2,17 +2,15 @@
 'use server';
 
 import { generateTradingIdea } from '@/ai/flows/generate-trading-idea';
-import { getChartData, getNewsData } from '@/lib/data';
+import { getChartData } from '@/lib/data';
 
 export async function generateIdeaAction() {
   try {
     const chartData = await getChartData(); 
-    const newsData = await getNewsData();
 
     // The AI prompt expects stringified JSON
     const input = {
       chartData: JSON.stringify(chartData),
-      newsData: JSON.stringify(newsData.slice(0, 5)), // Use a subset of news for the prompt
     };
 
     const idea = await generateTradingIdea(input);
