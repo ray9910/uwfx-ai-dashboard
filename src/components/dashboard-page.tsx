@@ -156,7 +156,7 @@ export function DashboardPage() {
               <h1 className="text-2xl font-semibold">AI Trading Desk</h1>
             </header>
 
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="flex-1 grid grid-cols-1 gap-8">
               <ChartCard />
               <TradeIdeaGeneratorCard
                 isGenerating={isGenerating}
@@ -164,7 +164,7 @@ export function DashboardPage() {
                 onGenerate={handleGenerateIdea}
                 onSave={handleSaveToJournal}
               />
-              <TradeJournalCard journal={tradeJournal} className="md:col-span-2" />
+              <TradeJournalCard journal={tradeJournal} />
             </div>
           </div>
         </div>
