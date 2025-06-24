@@ -4,17 +4,25 @@
 import { generateTradingIdea, type GenerateTradingIdeaInput } from '@/ai/flows/generate-trading-idea';
 import { suggestTickers } from '@/ai/flows/suggest-tickers';
 import { getChartData } from '@/lib/data';
+import { getNewsForSymbol } from './news';
 
 export async function generateIdeaAction(query: string, tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string | null) {
   try {
     // In a real app, you would fetch chart data for the ticker identified from the query.
     // For now, we continue to use mock data.
     const chartData = await getChartData(); 
+    const newsArticles = await getNewsForSymbol(query);
+
+    // Format news for the prompt
+    const newsData = newsArticles.length > 0 
+      ? newsArticles.map(article => `- ${article.title} (${article.source})`).join('\n') 
+      : undefined;
 
     const input: GenerateTradingIdeaInput = {
       query,
       tradingStyle,
       chartData: JSON.stringify(chartData),
+      newsData,
     };
 
     if (screenshotDataUri) {
