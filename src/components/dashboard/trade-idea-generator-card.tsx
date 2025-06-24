@@ -51,6 +51,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, generatedIdea, onGenerate
   const [suggestions, setSuggestions] = React.useState<TickerSuggestion[]>([]);
   const [isSuggestionsLoading, setIsSuggestionsLoading] = React.useState(false);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
+  const [selectedTicker, setSelectedTicker] = React.useState<TickerSuggestion | null>(null);
   const debounceTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const suggestionsContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -77,6 +78,10 @@ export function TradeIdeaGeneratorCard({ isGenerating, generatedIdea, onGenerate
   }, []);
 
   React.useEffect(() => {
+    if (selectedTicker && queryValue !== selectedTicker.symbol) {
+        setSelectedTicker(null);
+    }
+
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
@@ -105,9 +110,10 @@ export function TradeIdeaGeneratorCard({ isGenerating, generatedIdea, onGenerate
         clearTimeout(debounceTimeoutRef.current);
       }
     };
-  }, [queryValue]);
+  }, [queryValue, selectedTicker]);
   
   const handleSuggestionClick = (suggestion: TickerSuggestion) => {
+    setSelectedTicker(suggestion);
     form.setValue('query', suggestion.symbol, { shouldValidate: true });
     setShowSuggestions(false);
   };
@@ -132,6 +138,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, generatedIdea, onGenerate
 
   const handleGenerateClick = () => {
     setScreenshotPreview(null);
+    setSelectedTicker(null);
     form.reset({ query: form.getValues('query'), tradingStyle: form.getValues('tradingStyle'), screenshot: undefined });
     form.handleSubmit(onSubmit)();
   };
@@ -226,6 +233,11 @@ export function TradeIdeaGeneratorCard({ isGenerating, generatedIdea, onGenerate
                         )}
                       </div>
                     </FormControl>
+                    {selectedTicker && (
+                        <p className="text-sm text-muted-foreground pt-1">
+                            Selected: <span className="font-semibold text-foreground">{selectedTicker.companyName} ({selectedTicker.symbol})</span>
+                        </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
