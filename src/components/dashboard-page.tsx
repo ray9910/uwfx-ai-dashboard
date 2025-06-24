@@ -26,10 +26,12 @@ import { ChartCard } from './dashboard/chart-card';
 import { TimelineWidgetCard } from './dashboard/timeline-widget-card';
 import { TradeIdeaGeneratorCard } from './dashboard/trade-idea-generator-card';
 import { TradeJournalCard } from './dashboard/trade-journal-card';
+import { NewsCard } from './dashboard/news-card';
 import { useToast } from '@/hooks/use-toast';
-import type { TradeIdea } from '@/types';
+import type { TradeIdea, NewsArticle } from '@/types';
 import type { GenerateTradingIdeaOutput } from '@/ai/flows/generate-trading-idea';
 import { generateIdeaAction } from '@/lib/actions';
+import { getNewsData } from '@/lib/data';
 import { Separator } from './ui/separator';
 import { Progress } from './ui/progress';
 
@@ -38,9 +40,14 @@ export function DashboardPage() {
   
   const [tradeJournal, setTradeJournal] = React.useState<TradeIdea[]>([]);
   const [credits, setCredits] = React.useState(10);
+  const [news, setNews] = React.useState<NewsArticle[]>([]);
   
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [generatedIdea, setGeneratedIdea] = React.useState<GenerateTradingIdeaOutput | null>(null);
+
+  React.useEffect(() => {
+    getNewsData().then(setNews);
+  }, []);
 
   const handleGenerateIdea = async () => {
     if (credits <= 0) {
@@ -159,10 +166,10 @@ export function DashboardPage() {
       <SidebarInset className="bg-transparent">
         <div className="flex flex-col min-h-svh p-4 md:p-6 lg:p-8">
           <div className="bg-card rounded-xl border p-4 sm:p-6 lg:p-8 w-full flex-1 flex flex-col">
-            <div className="flex items-center gap-2 mb-6">
-              <SidebarTrigger />
+            <header className="flex items-center gap-4 mb-8">
+              <SidebarTrigger className="md:hidden" />
               <h1 className="text-2xl font-semibold">AI Trading Desk</h1>
-            </div>
+            </header>
 
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
               <ChartCard />
@@ -172,7 +179,8 @@ export function DashboardPage() {
                 onGenerate={handleGenerateIdea}
                 onSave={handleSaveToJournal}
               />
-              <TimelineWidgetCard className="md:col-span-2" />
+              <TimelineWidgetCard className="md:col-span-1" />
+              <NewsCard news={news} className="md:col-span-1" />
               <TradeJournalCard journal={tradeJournal} className="md:col-span-2" />
             </div>
           </div>

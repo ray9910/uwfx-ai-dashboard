@@ -28,7 +28,7 @@ export function NewsCard({ news, className }: NewsCardProps) {
             {news.map((item, index) => (
               <div key={item.id}>
                 <div className="flex flex-col gap-1.5">
-                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="font-medium hover:text-primary transition-colors">
+                  <a href={item.url} rel="noopener noreferrer" className="font-medium hover:text-primary transition-colors">
                     {item.title}
                   </a>
                   <div className="text-sm text-muted-foreground flex items-center justify-between">
