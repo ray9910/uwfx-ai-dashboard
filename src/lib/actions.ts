@@ -8,15 +8,17 @@ import { getNewsForSymbol } from './news';
 
 export async function generateIdeaAction(query: string, tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string | null) {
   try {
-    // In a real app, you would fetch chart data for the ticker identified from the query.
-    // For now, we continue to use mock data.
-    const chartData = await getChartData(); 
+    const chartData = await getChartData(query);
     const newsArticles = await getNewsForSymbol(query);
 
     // Format news for the prompt
     const newsData = newsArticles.length > 0 
       ? newsArticles.map(article => `- ${article.title} (${article.source})`).join('\n') 
       : undefined;
+    
+    if (chartData.length === 0) {
+      return { success: false, error: 'Could not fetch chart data. Please check the ticker symbol and your API key.' };
+    }
 
     const input: GenerateTradingIdeaInput = {
       query,
