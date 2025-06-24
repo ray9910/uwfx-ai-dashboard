@@ -28,9 +28,9 @@ import { NewsCard } from './dashboard/news-card';
 import { TradeIdeaGeneratorCard } from './dashboard/trade-idea-generator-card';
 import { TradeJournalCard } from './dashboard/trade-journal-card';
 import { useToast } from '@/hooks/use-toast';
-import type { ChartDataPoint, NewsArticle, TradeIdea } from '@/types';
+import type { NewsArticle, TradeIdea } from '@/types';
 import type { GenerateTradingIdeaOutput } from '@/ai/flows/generate-trading-idea';
-import { getChartData, getNewsData } from '@/lib/data';
+import { getNewsData } from '@/lib/data';
 import { generateIdeaAction } from '@/lib/actions';
 import { Skeleton } from './ui/skeleton';
 import { Separator } from './ui/separator';
@@ -42,7 +42,6 @@ export function DashboardPage() {
   const [tradeJournal, setTradeJournal] = React.useState<TradeIdea[]>([]);
   const [credits, setCredits] = React.useState(10);
   
-  const [chartData, setChartData] = React.useState<ChartDataPoint[]>([]);
   const [news, setNews] = React.useState<NewsArticle[]>([]);
   
   const [isDataLoading, setIsDataLoading] = React.useState(true);
@@ -52,9 +51,8 @@ export function DashboardPage() {
   React.useEffect(() => {
     const loadData = async () => {
       try {
-        const [chart, news] = await Promise.all([getChartData(), getNewsData()]);
-        setChartData(chart);
-        setNews(news);
+        const newsData = await getNewsData();
+        setNews(newsData);
       } catch (error) {
         toast({
           variant: 'destructive',
@@ -204,7 +202,7 @@ export function DashboardPage() {
             ) : (
               <div className="flex-1 flex flex-col gap-8">
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                  <ChartCard className="lg:col-span-2" chartData={chartData} />
+                  <ChartCard className="lg:col-span-2" />
                   <NewsCard news={news} />
                 </div>
                 <div className="grid gap-8 md:grid-cols-2">

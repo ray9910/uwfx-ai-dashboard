@@ -1,34 +1,52 @@
 'use client';
 
+import React, { useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-  Area,
-  AreaChart,
-} from 'recharts';
-import type { ChartDataPoint } from '@/types';
 import { CandlestickChart } from 'lucide-react';
-import { useMemo } from 'react';
 
 interface ChartCardProps {
-  chartData: ChartDataPoint[];
   className?: string;
 }
 
-export function ChartCard({ chartData, className }: ChartCardProps) {
-    const formattedData = useMemo(() => {
-        return chartData.map(d => ({
-            ...d,
-            date: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-        }));
-    }, [chartData]);
-    
+export function ChartCard({ className }: ChartCardProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isScriptAppended = useRef(false);
+
+  useEffect(() => {
+    if (containerRef.current && !isScriptAppended.current) {
+      const script = document.createElement('script');
+      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+      script.type = 'text/javascript';
+      script.async = true;
+      script.innerHTML = JSON.stringify({
+          "allow_symbol_change": true,
+          "calendar": false,
+          "details": false,
+          "hide_side_toolbar": true,
+          "hide_top_toolbar": false,
+          "hide_legend": false,
+          "hide_volume": false,
+          "hotlist": false,
+          "interval": "D",
+          "locale": "en",
+          "save_image": true,
+          "style": "1",
+          "symbol": "NASDAQ:MSFT",
+          "theme": "light",
+          "timezone": "Etc/UTC",
+          "backgroundColor": "#ffffff",
+          "gridColor": "rgba(46, 46, 46, 0.06)",
+          "watchlist": [],
+          "withdateranges": false,
+          "compareSymbols": [],
+          "studies": [],
+          "autosize": true
+      });
+      containerRef.current.appendChild(script);
+      isScriptAppended.current = true;
+    }
+  }, []);
+
   return (
     <Card className={className}>
       <CardHeader>
@@ -37,30 +55,14 @@ export function ChartCard({ chartData, className }: ChartCardProps) {
           <span>Market Overview (MSFT)</span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={formattedData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                <defs>
-                    <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
-                    </linearGradient>
-                </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
-              <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} />
-              <YAxis domain={['dataMin - 10', 'dataMax + 10']} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickFormatter={(value) => `$${value}`} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  borderColor: 'hsl(var(--border))',
-                  borderRadius: 'var(--radius)',
-                }}
-                labelStyle={{ color: 'hsl(var(--foreground))' }}
-              />
-              <Area type="monotone" dataKey="price" stroke="hsl(var(--chart-1))" fillOpacity={1} fill="url(#colorPrice)" strokeWidth={2} activeDot={{ r: 6 }} />
-            </AreaChart>
-          </ResponsiveContainer>
+      <CardContent className="h-96 w-full p-0">
+        <div className="tradingview-widget-container h-full w-full" ref={containerRef}>
+          <div className="tradingview-widget-container__widget" style={{ height: "calc(100% - 32px)", width: "100%" }}></div>
+          <div className="tradingview-widget-copyright" style={{textAlign: 'center', fontSize: '13px'}}>
+            <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank" style={{ color: '#2962FF', textDecoration: 'none' }}>
+              <span>Track all markets on TradingView</span>
+            </a>
+          </div>
         </div>
       </CardContent>
     </Card>
