@@ -118,55 +118,55 @@ export function DashboardPage() {
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar collapsible="icon">
         <SidebarHeader>
           <div className="flex items-center gap-2">
             <Icons.logo className="size-8 text-primary" />
-            <span className="text-lg font-semibold">Uwfx AI</span>
+            <span className="text-lg font-semibold group-data-[state=collapsed]:hidden">Uwfx AI</span>
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#" isActive>
+              <SidebarMenuButton href="#" isActive tooltip="Dashboard">
                 <CandlestickChart />
-                Dashboard
+                <span>Dashboard</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#">
+              <SidebarMenuButton href="#" tooltip="Trade Journal">
                 <BookOpen />
-                Trade Journal
+                <span>Trade Journal</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#">
+              <SidebarMenuButton href="#" tooltip="News Feed">
                 <Newspaper />
-                News Feed
+                <span>News Feed</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#">
+              <SidebarMenuButton href="#" tooltip="AI Settings">
                 <Bot />
-                AI Settings
+                <span>AI Settings</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-          <Button asChild variant="outline">
+          <SidebarMenuButton asChild variant="outline" tooltip="Buy Credits">
             <a href="https://polar.sh" target="_blank" rel="noopener noreferrer">
               <CreditCard />
-              Buy Credits
+              <span>Buy Credits</span>
             </a>
-          </Button>
+          </SidebarMenuButton>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col min-h-svh">
           <header className="sticky top-0 z-10 flex items-center justify-between h-14 px-4 border-b bg-background/95 backdrop-blur-sm">
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="md:hidden" />
+              <SidebarTrigger />
               <h1 className="text-xl font-semibold">Dashboard</h1>
             </div>
             <div className="flex items-center gap-4">
@@ -175,7 +175,7 @@ export function DashboardPage() {
                 {credits} Credits
               </Badge>
               <Avatar className="h-9 w-9">
-                <AvatarImage src="https://placehold.co/100x100.png" alt="User" />
+                <AvatarImage src="https://placehold.co/100x100.png" alt="User" data-ai-hint="person" />
                 <AvatarFallback>U</AvatarFallback>
               </Avatar>
             </div>
