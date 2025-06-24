@@ -23,15 +23,13 @@ import {
 } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { ChartCard } from './dashboard/chart-card';
-import { NewsCard } from './dashboard/news-card';
+import { TimelineWidgetCard } from './dashboard/timeline-widget-card';
 import { TradeIdeaGeneratorCard } from './dashboard/trade-idea-generator-card';
 import { TradeJournalCard } from './dashboard/trade-journal-card';
 import { useToast } from '@/hooks/use-toast';
-import type { NewsArticle, TradeIdea } from '@/types';
+import type { TradeIdea } from '@/types';
 import type { GenerateTradingIdeaOutput } from '@/ai/flows/generate-trading-idea';
-import { getNewsData } from '@/lib/data';
 import { generateIdeaAction } from '@/lib/actions';
-import { Skeleton } from './ui/skeleton';
 import { Separator } from './ui/separator';
 import { Progress } from './ui/progress';
 
@@ -41,29 +39,8 @@ export function DashboardPage() {
   const [tradeJournal, setTradeJournal] = React.useState<TradeIdea[]>([]);
   const [credits, setCredits] = React.useState(10);
   
-  const [news, setNews] = React.useState<NewsArticle[]>([]);
-  
-  const [isDataLoading, setIsDataLoading] = React.useState(true);
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [generatedIdea, setGeneratedIdea] = React.useState<GenerateTradingIdeaOutput | null>(null);
-
-  React.useEffect(() => {
-    const loadData = async () => {
-      try {
-        const newsData = await getNewsData();
-        setNews(newsData);
-      } catch (error) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to load dashboard data.',
-        });
-      } finally {
-        setIsDataLoading(false);
-      }
-    };
-    loadData();
-  }, [toast]);
 
   const handleGenerateIdea = async () => {
     if (credits <= 0) {
@@ -187,26 +164,17 @@ export function DashboardPage() {
               <h1 className="text-2xl font-semibold">AI Trading Desk</h1>
             </div>
 
-            {isDataLoading ? (
-               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Skeleton className="h-96" />
-                <Skeleton className="h-96" />
-                <Skeleton className="h-96 md:col-span-2" />
-                <Skeleton className="h-96 md:col-span-2" />
-              </div>
-            ) : (
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <ChartCard />
-                <TradeIdeaGeneratorCard
-                  isGenerating={isGenerating}
-                  generatedIdea={generatedIdea}
-                  onGenerate={handleGenerateIdea}
-                  onSave={handleSaveToJournal}
-                />
-                <NewsCard news={news} className="md:col-span-2" />
-                <TradeJournalCard journal={tradeJournal} className="md:col-span-2" />
-              </div>
-            )}
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <ChartCard />
+              <TradeIdeaGeneratorCard
+                isGenerating={isGenerating}
+                generatedIdea={generatedIdea}
+                onGenerate={handleGenerateIdea}
+                onSave={handleSaveToJournal}
+              />
+              <TimelineWidgetCard className="md:col-span-2" />
+              <TradeJournalCard journal={tradeJournal} className="md:col-span-2" />
+            </div>
           </div>
         </div>
       </SidebarInset>
