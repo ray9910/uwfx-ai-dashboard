@@ -1,20 +1,24 @@
 
 'use server';
 
-import { generateTradingIdea } from '@/ai/flows/generate-trading-idea';
+import { generateTradingIdea, type GenerateTradingIdeaInput } from '@/ai/flows/generate-trading-idea';
 import { getChartData } from '@/lib/data';
 
-export async function generateIdeaAction(query: string, tradingStyle: string) {
+export async function generateIdeaAction(query: string, tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string | null) {
   try {
     // In a real app, you would fetch chart data for the ticker identified from the query.
     // For now, we continue to use mock data.
     const chartData = await getChartData(); 
 
-    const input = {
+    const input: GenerateTradingIdeaInput = {
       query,
       tradingStyle,
       chartData: JSON.stringify(chartData),
     };
+
+    if (screenshotDataUri) {
+      input.screenshotDataUri = screenshotDataUri;
+    }
 
     const idea = await generateTradingIdea(input);
     return { success: true, data: idea };

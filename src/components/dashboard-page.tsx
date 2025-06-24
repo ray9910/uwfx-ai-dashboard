@@ -33,7 +33,7 @@ import { Progress } from './ui/progress';
 
 type TradeIdeaFormValues = {
   query: string;
-  tradingStyle: string;
+  tradingStyle: 'Day Trader' | 'Swing Trader';
 };
 
 export function DashboardPage() {
@@ -45,7 +45,7 @@ export function DashboardPage() {
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [generatedIdea, setGeneratedIdea] = React.useState<GenerateTradingIdeaOutput | null>(null);
 
-  const handleGenerateIdea = async (data: TradeIdeaFormValues) => {
+  const handleGenerateIdea = async (data: TradeIdeaFormValues, screenshotDataUri: string | null) => {
     if (credits <= 0) {
       toast({
         variant: 'destructive',
@@ -59,7 +59,7 @@ export function DashboardPage() {
     setGeneratedIdea(null);
     setCredits((prev) => prev - 1);
 
-    const result = await generateIdeaAction(data.query, data.tradingStyle);
+    const result = await generateIdeaAction(data.query, data.tradingStyle, screenshotDataUri);
 
     if (result.success && result.data) {
       setGeneratedIdea(result.data);
@@ -71,7 +71,7 @@ export function DashboardPage() {
       toast({
         variant: 'destructive',
         title: 'Generation Failed',
-        description: result.error,
+        description: result.error || 'An unknown error occurred.',
       });
       setCredits((prev) => prev + 1); // Refund credit on failure
     }
@@ -95,6 +95,9 @@ export function DashboardPage() {
 
   return (
     <SidebarProvider>
+      <div className="md:hidden p-2 fixed top-0 left-0 z-20">
+        <SidebarTrigger />
+      </div>
       <Sidebar collapsible="icon">
         <SidebarHeader>
           <div className="flex items-center gap-2">
@@ -156,7 +159,9 @@ export function DashboardPage() {
         <div className="flex flex-col min-h-svh p-4 md:p-6 lg:p-8">
           <div className="bg-card rounded-xl border p-4 sm:p-6 lg:p-8 w-full flex-1 flex flex-col">
             <header className="flex items-center gap-4 mb-8">
-              <SidebarTrigger />
+              <div className="hidden md:block">
+                <SidebarTrigger />
+              </div>
               <h1 className="text-2xl font-semibold">AI Trading Desk</h1>
             </header>
 

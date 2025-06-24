@@ -15,6 +15,9 @@ const GenerateTradingIdeaInputSchema = z.object({
   query: z.string().describe("The user's query for a stock, e.g., 'Apple' or 'AAPL'."),
   tradingStyle: z.enum(['Day Trader', 'Swing Trader']).describe('The trading style for the idea.'),
   chartData: z.string().describe('Chart data as a JSON string for the relevant ticker.'),
+  screenshotDataUri: z.string().optional().describe(
+    "An optional screenshot of a chart or other relevant information, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+  ),
 });
 export type GenerateTradingIdeaInput = z.infer<typeof GenerateTradingIdeaInputSchema>;
 
@@ -43,6 +46,11 @@ const prompt = ai.definePrompt({
     - A "Day Trader" focuses on very short-term price movements, often within the same day.
     - A "Swing Trader" aims to capture gains in a stock within a period of a few days to several weeks.
 3. Your analysis should be tailored to the chosen trading style.
+
+{{#if screenshotDataUri}}
+4. Also consider the user-provided screenshot in your analysis. The screenshot may contain technical indicators, chart patterns, or other relevant information.
+User-provided screenshot: {{media url=screenshotDataUri}}
+{{/if}}
 
 Chart Data for the identified ticker:
 {{{chartData}}}
