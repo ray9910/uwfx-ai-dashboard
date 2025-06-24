@@ -12,9 +12,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { suggestTickersAction } from '@/lib/actions';
+import type { TickerSuggestion } from '@/types';
 
 const formSchema = z.object({
-  query: z.string().min(2, { message: 'Please enter a company name or ticker.' }),
+  query: z.string().min(1, { message: 'Please enter a company name or ticker.' }),
   tradingStyle: z.enum(['Day Trader', 'Swing Trader']),
   screenshot: z.any().optional(),
 });
@@ -46,6 +48,12 @@ const StatItem = ({ label, value, variant = 'default' }: { label: string; value:
 export function TradeIdeaGeneratorCard({ isGenerating, generatedIdea, onGenerate, onSave }: TradeIdeaGeneratorCardProps) {
   const [screenshotPreview, setScreenshotPreview] = React.useState<string | null>(null);
 
+  const [suggestions, setSuggestions] = React.useState<TickerSuggestion[]>([]);
+  const [isSuggestionsLoading, setIsSuggestionsLoading] = React.useState(false);
+  const [showSuggestions, setShowSuggestions] = React.useState(false);
+  const debounceTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const suggestionsContainerRef = React.useRef<HTMLDivElement>(null);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,6 +61,56 @@ export function TradeIdeaGeneratorCard({ isGenerating, generatedIdea, onGenerate
       tradingStyle: 'Swing Trader',
     },
   });
+
+  const queryValue = form.watch('query');
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (suggestionsContainerRef.current && !suggestionsContainerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    if (!queryValue || queryValue.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    
+    setShowSuggestions(true);
+    setIsSuggestionsLoading(true);
+    
+    debounceTimeoutRef.current = setTimeout(async () => {
+      const result = await suggestTickersAction(queryValue);
+      if (result.success && result.data) {
+        setSuggestions(result.data);
+      } else {
+        setSuggestions([]);
+        console.error("Failed to fetch suggestions:", result.error);
+      }
+      setIsSuggestionsLoading(false);
+    }, 300);
+
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, [queryValue]);
+  
+  const handleSuggestionClick = (suggestion: TickerSuggestion) => {
+    form.setValue('query', suggestion.symbol, { shouldValidate: true });
+    setShowSuggestions(false);
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -73,7 +131,6 @@ export function TradeIdeaGeneratorCard({ isGenerating, generatedIdea, onGenerate
   };
 
   const handleGenerateClick = () => {
-    // Clear screenshot preview for new generation if the form is submitted again from the "Generated Idea" view.
     setScreenshotPreview(null);
     form.reset({ query: form.getValues('query'), tradingStyle: form.getValues('tradingStyle'), screenshot: undefined });
     form.handleSubmit(onSubmit)();
@@ -124,9 +181,49 @@ export function TradeIdeaGeneratorCard({ isGenerating, generatedIdea, onGenerate
                   <FormItem>
                     <FormLabel>Company Name or Ticker</FormLabel>
                     <FormControl>
-                      <div className="relative">
+                      <div className="relative" ref={suggestionsContainerRef}>
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="e.g. 'Apple' or 'AAPL'" className="pl-10" {...field} />
+                        <Input 
+                          placeholder="e.g. 'Apple' or 'AAPL'" 
+                          className="pl-10" 
+                          {...field}
+                          autoComplete="off"
+                          onFocus={() => {
+                            if (field.value?.length > 1 && suggestions.length > 0) {
+                              setShowSuggestions(true);
+                            }
+                          }}
+                        />
+                        {showSuggestions && (
+                          <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                            {isSuggestionsLoading ? (
+                              <div className="flex items-center justify-center p-3 text-sm text-muted-foreground">
+                                <Loader className="h-4 w-4 mr-2 animate-spin" />
+                                Loading...
+                              </div>
+                            ) : suggestions.length > 0 ? (
+                              <ul>
+                                {suggestions.map((s) => (
+                                  <li
+                                    key={s.symbol}
+                                    className="px-3 py-2 text-sm cursor-pointer hover:bg-accent"
+                                    onMouseDown={(e) => {
+                                      e.preventDefault();
+                                      handleSuggestionClick(s);
+                                    }}
+                                  >
+                                    <span className="font-semibold">{s.symbol}</span>
+                                    <span className="ml-2 text-muted-foreground">{s.companyName}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <div className="p-3 text-sm text-center text-muted-foreground">
+                                No suggestions found.
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </FormControl>
                     <FormMessage />

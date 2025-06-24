@@ -10,3 +10,8 @@ export type ChartDataPoint = {
   date: string;
   price: number;
 };
+
+export type TickerSuggestion = {
+  symbol: string;
+  companyName: string;
+};

@@ -2,6 +2,7 @@
 'use server';
 
 import { generateTradingIdea, type GenerateTradingIdeaInput } from '@/ai/flows/generate-trading-idea';
+import { suggestTickers } from '@/ai/flows/suggest-tickers';
 import { getChartData } from '@/lib/data';
 
 export async function generateIdeaAction(query: string, tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string | null) {
@@ -24,6 +25,19 @@ export async function generateIdeaAction(query: string, tradingStyle: 'Day Trade
     return { success: true, data: idea };
   } catch (error) {
     console.error('Error generating trading idea:', error);
+    if (error instanceof Error) {
+        return { success: false, error: error.message };
+    }
+    return { success: false, error: 'An unknown error occurred.' };
+  }
+}
+
+export async function suggestTickersAction(query: string) {
+  try {
+    const suggestions = await suggestTickers({ query });
+    return { success: true, data: suggestions };
+  } catch (error) {
+    console.error('Error suggesting tickers:', error);
     if (error instanceof Error) {
         return { success: false, error: error.message };
     }
