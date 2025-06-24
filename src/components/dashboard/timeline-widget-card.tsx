@@ -22,12 +22,12 @@ export function TimelineWidgetCard({ className }: TimelineWidgetCardProps) {
       script.innerHTML = JSON.stringify({
           "displayMode": "regular",
           "feedMode": "symbol",
-          "symbol": "BITSTAMP:BTCUSD",
+          "symbol": "NASDAQ:AAPL",
           "colorTheme": "light",
           "isTransparent": false,
           "locale": "en",
           "width": "100%",
-          "height": 550
+          "height": "100%"
       });
       containerRef.current.appendChild(script);
       isScriptAppended.current = true;
@@ -42,9 +42,9 @@ export function TimelineWidgetCard({ className }: TimelineWidgetCardProps) {
           <span>Market Timeline</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
-        <div className="tradingview-widget-container" ref={containerRef} style={{height: '550px', width: '100%'}}>
-          <div className="tradingview-widget-container__widget"></div>
+      <CardContent className="h-96 w-full p-0">
+        <div className="tradingview-widget-container h-full w-full" ref={containerRef}>
+          <div className="tradingview-widget-container__widget" style={{ height: "calc(100% - 32px)", width: "100%" }}></div>
           <div className="tradingview-widget-copyright" style={{textAlign: 'center', fontSize: '13px'}}>
             <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank" style={{ color: '#2962FF', textDecoration: 'none' }}>
               <span>Track all markets on TradingView</span>
