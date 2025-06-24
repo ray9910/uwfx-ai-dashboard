@@ -13,14 +13,16 @@ import { Badge } from '@/components/ui/badge';
 import type { TradeIdea } from '@/types';
 import { BookOpen, TrendingUp, TrendingDown } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface TradeJournalCardProps {
   journal: TradeIdea[];
+  className?: string;
 }
 
-export function TradeJournalCard({ journal }: TradeJournalCardProps) {
+export function TradeJournalCard({ journal, className }: TradeJournalCardProps) {
   return (
-    <Card>
+    <Card className={cn(className)}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BookOpen className="h-6 w-6" />

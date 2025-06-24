@@ -191,8 +191,8 @@ export function DashboardPage() {
                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Skeleton className="h-96" />
                 <Skeleton className="h-96" />
-                <Skeleton className="h-96" />
-                <Skeleton className="h-96" />
+                <Skeleton className="h-96 md:col-span-2" />
+                <Skeleton className="h-96 md:col-span-2" />
               </div>
             ) : (
               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -203,8 +203,8 @@ export function DashboardPage() {
                   onGenerate={handleGenerateIdea}
                   onSave={handleSaveToJournal}
                 />
-                <NewsCard news={news} />
-                <TradeJournalCard journal={tradeJournal} />
+                <NewsCard news={news} className="md:col-span-2" />
+                <TradeJournalCard journal={tradeJournal} className="md:col-span-2" />
               </div>
             )}
           </div>

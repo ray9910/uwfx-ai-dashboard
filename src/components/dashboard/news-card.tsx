@@ -6,14 +6,16 @@ import { Separator } from '@/components/ui/separator';
 import type { NewsArticle } from '@/types';
 import { Newspaper } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface NewsCardProps {
   news: NewsArticle[];
+  className?: string;
 }
 
-export function NewsCard({ news }: NewsCardProps) {
+export function NewsCard({ news, className }: NewsCardProps) {
   return (
-    <Card>
+    <Card className={cn(className)}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Newspaper className="h-6 w-6" />
