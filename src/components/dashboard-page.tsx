@@ -14,7 +14,6 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import {
   Bot,
   CandlestickChart,
@@ -189,31 +188,23 @@ export function DashboardPage() {
             </div>
 
             {isDataLoading ? (
-               <div className="flex-1 flex flex-col gap-8">
-                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                  <Skeleton className="lg:col-span-2 h-96" />
-                  <Skeleton className="h-96" />
-                </div>
-                <div className="grid gap-8 md:grid-cols-2">
-                  <Skeleton className="h-96" />
-                  <Skeleton className="h-96" />
-                </div>
+               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Skeleton className="h-96" />
+                <Skeleton className="h-96" />
+                <Skeleton className="h-96" />
+                <Skeleton className="h-96" />
               </div>
             ) : (
-              <div className="flex-1 flex flex-col gap-8">
-                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                  <ChartCard className="lg:col-span-2" />
-                  <NewsCard news={news} />
-                </div>
-                <div className="grid gap-8 md:grid-cols-2">
-                  <TradeIdeaGeneratorCard
-                    isGenerating={isGenerating}
-                    generatedIdea={generatedIdea}
-                    onGenerate={handleGenerateIdea}
-                    onSave={handleSaveToJournal}
-                  />
-                  <TradeJournalCard journal={tradeJournal} />
-                </div>
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <ChartCard />
+                <TradeIdeaGeneratorCard
+                  isGenerating={isGenerating}
+                  generatedIdea={generatedIdea}
+                  onGenerate={handleGenerateIdea}
+                  onSave={handleSaveToJournal}
+                />
+                <NewsCard news={news} />
+                <TradeJournalCard journal={tradeJournal} />
               </div>
             )}
           </div>
