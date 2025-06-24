@@ -12,16 +12,19 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateTradingIdeaInputSchema = z.object({
-  chartData: z.string().describe('Chart data as a JSON string.'),
+  query: z.string().describe("The user's query for a stock, e.g., 'Apple' or 'AAPL'."),
+  tradingStyle: z.enum(['Day Trader', 'Swing Trader']).describe('The trading style for the idea.'),
+  chartData: z.string().describe('Chart data as a JSON string for the relevant ticker.'),
 });
 export type GenerateTradingIdeaInput = z.infer<typeof GenerateTradingIdeaInputSchema>;
 
 const GenerateTradingIdeaOutputSchema = z.object({
+  ticker: z.string().describe('The stock ticker symbol for the trading idea.'),
   entry: z.number().describe('Entry price for the trade.'),
   stopLoss: z.number().describe('Stop loss price for the trade.'),
   takeProfit1: z.number().describe('First take profit price for the trade.'),
   takeProfit2: z.number().describe('Second take profit price for the trade.'),
-  rationale: z.string().describe('Rationale for the trading idea.'),
+  rationale: z.string().describe('Rationale for the trading idea, tailored to the trading style.'),
 });
 export type GenerateTradingIdeaOutput = z.infer<typeof GenerateTradingIdeaOutputSchema>;
 
@@ -33,17 +36,25 @@ const prompt = ai.definePrompt({
   name: 'generateTradingIdeaPrompt',
   input: {schema: GenerateTradingIdeaInputSchema},
   output: {schema: GenerateTradingIdeaOutputSchema},
-  prompt: `You are an expert trading signal generator. Analyze the provided chart data to generate a structured trading idea.
+  prompt: `You are an expert trading signal generator and stock market analyst.
 
-Chart Data: {{{chartData}}}
+1. First, identify the official stock ticker symbol for the user's query: "{{{query}}}".
+2. Then, using the provided chart data (which you should assume is for the identified ticker) and the trading style of a "{{{tradingStyle}}}", generate a structured trading idea.
+    - A "Day Trader" focuses on very short-term price movements, often within the same day.
+    - A "Swing Trader" aims to capture gains in a stock within a period of a few days to several weeks.
+3. Your analysis should be tailored to the chosen trading style.
 
-Provide the trading idea in the following JSON format:
+Chart Data for the identified ticker:
+{{{chartData}}}
+
+Provide your response in the following JSON format, including the ticker you identified:
 {
+  "ticker": "<identified_ticker_symbol>",
   "entry": <entry_price>,
   "stopLoss": <stop_loss_price>,
   "takeProfit1": <take_profit_1_price>,
   "takeProfit2": <take_profit_2_price>,
-  "rationale": <rationale_for_the_trade>
+  "rationale": "<rationale_for_the_trade_based_on_query_and_trading_style>"
 }
 `,
 });

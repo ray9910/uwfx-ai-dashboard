@@ -4,12 +4,15 @@
 import { generateTradingIdea } from '@/ai/flows/generate-trading-idea';
 import { getChartData } from '@/lib/data';
 
-export async function generateIdeaAction() {
+export async function generateIdeaAction(query: string, tradingStyle: string) {
   try {
+    // In a real app, you would fetch chart data for the ticker identified from the query.
+    // For now, we continue to use mock data.
     const chartData = await getChartData(); 
 
-    // The AI prompt expects stringified JSON
     const input = {
+      query,
+      tradingStyle,
       chartData: JSON.stringify(chartData),
     };
 

@@ -2,7 +2,6 @@ import type { GenerateTradingIdeaOutput } from "@/ai/flows/generate-trading-idea
 
 export type TradeIdea = GenerateTradingIdeaOutput & {
   id: string;
-  ticker: string;
   status: 'Open' | 'Closed';
   timestamp: string;
 };

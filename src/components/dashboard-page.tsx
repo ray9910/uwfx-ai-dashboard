@@ -31,6 +31,11 @@ import { generateIdeaAction } from '@/lib/actions';
 import { Separator } from './ui/separator';
 import { Progress } from './ui/progress';
 
+type TradeIdeaFormValues = {
+  query: string;
+  tradingStyle: string;
+};
+
 export function DashboardPage() {
   const { toast } = useToast();
   
@@ -40,7 +45,7 @@ export function DashboardPage() {
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [generatedIdea, setGeneratedIdea] = React.useState<GenerateTradingIdeaOutput | null>(null);
 
-  const handleGenerateIdea = async () => {
+  const handleGenerateIdea = async (data: TradeIdeaFormValues) => {
     if (credits <= 0) {
       toast({
         variant: 'destructive',
@@ -54,13 +59,13 @@ export function DashboardPage() {
     setGeneratedIdea(null);
     setCredits((prev) => prev - 1);
 
-    const result = await generateIdeaAction();
+    const result = await generateIdeaAction(data.query, data.tradingStyle);
 
     if (result.success && result.data) {
       setGeneratedIdea(result.data);
       toast({
         title: 'New Trading Idea Generated',
-        description: 'Review the new idea below.',
+        description: `Review the new idea for ${result.data.ticker} below.`,
       });
     } else {
       toast({
@@ -77,7 +82,6 @@ export function DashboardPage() {
     const newTrade: TradeIdea = {
       ...idea,
       id: crypto.randomUUID(),
-      ticker: 'MSFT', // Mock ticker
       status: 'Open',
       timestamp: new Date().toISOString(),
     };
@@ -85,7 +89,7 @@ export function DashboardPage() {
     setGeneratedIdea(null);
     toast({
       title: 'Idea Saved',
-      description: 'The new trading idea has been added to your journal.',
+      description: `The trading idea for ${idea.ticker} has been added to your journal.`,
     });
   };
 
