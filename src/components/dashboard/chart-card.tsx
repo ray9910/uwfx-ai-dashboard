@@ -43,8 +43,8 @@ export function ChartCard({ chartData, className }: ChartCardProps) {
             <AreaChart data={formattedData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                 <defs>
                     <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
                     </linearGradient>
                 </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
@@ -52,13 +52,13 @@ export function ChartCard({ chartData, className }: ChartCardProps) {
               <YAxis domain={['dataMin - 10', 'dataMax + 10']} tick={{ fill: 'hsl(var(--muted-foreground))' }} fontSize={12} tickFormatter={(value) => `$${value}`} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--background))',
+                  backgroundColor: 'hsl(var(--card))',
                   borderColor: 'hsl(var(--border))',
                   borderRadius: 'var(--radius)',
                 }}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
               />
-              <Area type="monotone" dataKey="price" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorPrice)" strokeWidth={2} activeDot={{ r: 6 }} />
+              <Area type="monotone" dataKey="price" stroke="hsl(var(--chart-1))" fillOpacity={1} fill="url(#colorPrice)" strokeWidth={2} activeDot={{ r: 6 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

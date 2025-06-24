@@ -16,8 +16,8 @@ interface TradeIdeaGeneratorCardProps {
 const StatItem = ({ label, value, variant = 'default' }: { label: string; value: string | number; variant?: 'default' | 'positive' | 'negative' }) => {
     const colors = {
         default: 'bg-secondary text-secondary-foreground',
-        positive: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-        negative: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+        positive: 'bg-success text-success-foreground',
+        negative: 'bg-destructive-muted text-destructive-muted-foreground',
     }
     return (
         <div className="flex justify-between items-center p-3 rounded-lg bg-background">

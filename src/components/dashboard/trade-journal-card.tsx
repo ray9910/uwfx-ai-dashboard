@@ -45,8 +45,8 @@ export function TradeJournalCard({ journal }: TradeJournalCardProps) {
                   <TableRow key={trade.id}>
                     <TableCell className="font-medium">{trade.ticker}</TableCell>
                     <TableCell className="text-right">${trade.entry.toFixed(2)}</TableCell>
-                    <TableCell className="text-right text-red-600 dark:text-red-400">${trade.stopLoss.toFixed(2)}</TableCell>
-                    <TableCell className="text-right text-green-600 dark:text-green-400">${trade.takeProfit1.toFixed(2)}</TableCell>
+                    <TableCell className="text-right text-destructive">${trade.stopLoss.toFixed(2)}</TableCell>
+                    <TableCell className="text-right text-success-strong">${trade.takeProfit1.toFixed(2)}</TableCell>
                     <TableCell className="text-center">
                       <Badge variant={trade.status === 'Open' ? 'default' : 'secondary'}>
                         {trade.status}

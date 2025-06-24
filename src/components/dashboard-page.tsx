@@ -33,7 +33,8 @@ import type { GenerateTradingIdeaOutput } from '@/ai/flows/generate-trading-idea
 import { getChartData, getNewsData } from '@/lib/data';
 import { generateIdeaAction } from '@/lib/actions';
 import { Skeleton } from './ui/skeleton';
-import { Badge } from './ui/badge';
+import { Separator } from './ui/separator';
+import { Progress } from './ui/progress';
 
 export function DashboardPage() {
   const { toast } = useToast();
@@ -154,42 +155,54 @@ export function DashboardPage() {
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-          <SidebarMenuButton asChild variant="outline" tooltip="Buy Credits">
-            <a href="https://polar.sh" target="_blank" rel="noopener noreferrer">
-              <CreditCard />
-              <span>Buy Credits</span>
-            </a>
-          </SidebarMenuButton>
+          <div className="w-full space-y-2 group-data-[state=collapsed]:hidden">
+            <Separator className="my-2 bg-sidebar-border" />
+            <div className="px-2 text-sm text-sidebar-foreground/70">
+              <p>Credits</p>
+              <Progress value={(credits / 15) * 100} className="h-2 mt-1 bg-sidebar-accent" />
+              <p className="text-xs mt-1">{credits} of 15 remaining</p>
+            </div>
+            <SidebarMenuButton asChild variant="outline" className="w-full bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90">
+              <a href="https://polar.sh" target="_blank" rel="noopener noreferrer">
+                <CreditCard />
+                <span>Buy Credits</span>
+              </a>
+            </SidebarMenuButton>
+          </div>
+          <Separator className="my-2 bg-sidebar-border" />
+          <div className="flex items-center gap-3 p-2">
+            <Avatar className="h-9 w-9">
+              <AvatarImage src="https://placehold.co/100x100.png" alt="User" data-ai-hint="person" />
+              <AvatarFallback>U</AvatarFallback>
+            </Avatar>
+            <div className="group-data-[state=collapsed]:hidden">
+              <p className="font-semibold text-sm text-sidebar-foreground">User</p>
+              <p className="text-xs text-sidebar-foreground/70">user@email.com</p>
+            </div>
+          </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
-        <div className="flex flex-col min-h-svh">
-          <header className="sticky top-0 z-10 flex items-center justify-between h-14 px-4 border-b bg-background/95 backdrop-blur-sm">
-            <div className="flex items-center gap-4">
+      <SidebarInset className="bg-transparent">
+        <div className="flex flex-col min-h-svh p-4 md:p-6 lg:p-8">
+          <div className="bg-card rounded-xl border p-4 sm:p-6 lg:p-8 w-full flex-1 flex flex-col">
+            <div className="flex items-center gap-2 mb-6">
               <SidebarTrigger />
-              <h1 className="text-xl font-semibold">Dashboard</h1>
+              <h1 className="text-2xl font-semibold">AI Trading Desk</h1>
             </div>
-            <div className="flex items-center gap-4">
-              <Badge variant="secondary" className="text-sm">
-                <CreditCard className="mr-2 h-4 w-4" />
-                {credits} Credits
-              </Badge>
-              <Avatar className="h-9 w-9">
-                <AvatarImage src="https://placehold.co/100x100.png" alt="User" data-ai-hint="person" />
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
-            </div>
-          </header>
-          <main className="flex-1 p-4 md:p-6 lg:p-8 space-y-8">
+
             {isDataLoading ? (
-               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                 <Skeleton className="lg:col-span-2 h-96" />
-                 <Skeleton className="h-96" />
-                 <Skeleton className="h-80" />
-                 <Skeleton className="h-80" />
-               </div>
+               <div className="flex-1 flex flex-col gap-8">
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                  <Skeleton className="lg:col-span-2 h-96" />
+                  <Skeleton className="h-96" />
+                </div>
+                <div className="grid gap-8 md:grid-cols-2">
+                  <Skeleton className="h-96" />
+                  <Skeleton className="h-96" />
+                </div>
+              </div>
             ) : (
-              <>
+              <div className="flex-1 flex flex-col gap-8">
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                   <ChartCard className="lg:col-span-2" chartData={chartData} />
                   <NewsCard news={news} />
@@ -203,9 +216,9 @@ export function DashboardPage() {
                   />
                   <TradeJournalCard journal={tradeJournal} />
                 </div>
-              </>
+              </div>
             )}
-          </main>
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
