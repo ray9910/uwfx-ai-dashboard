@@ -32,7 +32,6 @@ import { Separator } from './ui/separator';
 import { Progress } from './ui/progress';
 
 type TradeIdeaFormValues = {
-  query: string;
   tradingStyle: 'Day Trader' | 'Swing Trader';
 };
 
@@ -44,6 +43,7 @@ export function DashboardPage() {
   
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [generatedIdea, setGeneratedIdea] = React.useState<GenerateTradingIdeaOutput | null>(null);
+  const [selectedSymbol, setSelectedSymbol] = React.useState('NASDAQ:AAPL');
 
   const handleGenerateIdea = async (data: TradeIdeaFormValues, screenshotDataUri: string | null) => {
     if (credits <= 0) {
@@ -59,7 +59,7 @@ export function DashboardPage() {
     setGeneratedIdea(null);
     setCredits((prev) => prev - 1);
 
-    const result = await generateIdeaAction(data.query, data.tradingStyle, screenshotDataUri);
+    const result = await generateIdeaAction(selectedSymbol, data.tradingStyle, screenshotDataUri);
 
     if (result.success && result.data) {
       setGeneratedIdea(result.data);
@@ -166,8 +166,12 @@ export function DashboardPage() {
             </header>
 
             <div className="flex-1 grid grid-cols-1 gap-8">
-              <ChartCard />
+              <ChartCard 
+                symbol={selectedSymbol}
+                onSymbolChange={setSelectedSymbol}
+              />
               <TradeIdeaGeneratorCard
+                selectedSymbol={selectedSymbol}
                 isGenerating={isGenerating}
                 generatedIdea={generatedIdea}
                 onGenerate={handleGenerateIdea}
