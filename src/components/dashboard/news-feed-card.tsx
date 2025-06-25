@@ -56,7 +56,7 @@ export function NewsFeedCard() {
   }, [theme]);
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-[550px]">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Newspaper className="h-6 w-6" />
