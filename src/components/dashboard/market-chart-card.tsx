@@ -12,11 +12,12 @@ export function MarketChartCard({ symbol }: MarketChartCardProps) {
 
   React.useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || !symbol) return;
 
     const getTheme = () => document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 
     const createWidget = () => {
+      // Ensure the container is empty before creating a new widget.
       container.innerHTML = '';
       
       const theme = getTheme();
@@ -31,19 +32,18 @@ export function MarketChartCard({ symbol }: MarketChartCardProps) {
         "locale": "en",
         "allow_symbol_change": true,
         "save_image": true,
+        "calendar": false,
         "details": false,
         "hotlist": false,
-        "calendar": false,
-        "withdateranges": false,
-        "hide_side_toolbar": false,
+        "hide_side_toolbar": true,
         "hide_top_toolbar": false,
         "hide_legend": false,
         "hide_volume": false,
+        "withdateranges": false,
         "watchlist": [],
         "compareSymbols": [],
         "studies": [],
-        // Match the card background color from globals.css
-        "backgroundColor": theme === 'dark' ? 'hsl(231 15% 12%)' : 'hsl(225 47% 95%)',
+        "backgroundColor": "transparent",
         "gridColor": theme === 'dark' ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.06)",
       };
 
@@ -58,8 +58,13 @@ export function MarketChartCard({ symbol }: MarketChartCardProps) {
 
     createWidget();
 
-    const observer = new MutationObserver(() => {
-        createWidget();
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          createWidget();
+          return;
+        }
+      }
     });
 
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
@@ -73,7 +78,7 @@ export function MarketChartCard({ symbol }: MarketChartCardProps) {
   }, [symbol]);
 
   return (
-    <Card className="h-[550px]">
+    <Card className="h-[550px] bg-transparent">
       <CardContent className="pt-6 h-full">
         <div ref={containerRef} className="tradingview-widget-container h-full" />
       </CardContent>
