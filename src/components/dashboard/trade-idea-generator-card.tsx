@@ -112,7 +112,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
           <CardContent className="space-y-6">
             <div>
               <FormLabel>Live Chart</FormLabel>
-              <div className="h-[400px] mt-2 rounded-lg border overflow-hidden bg-background">
+              <div className="h-[550px] mt-2 rounded-lg border overflow-hidden bg-background">
                 <MarketChartCard ref={chartRef} symbol="NASDAQ:AAPL" className="h-full" />
               </div>
             </div>
