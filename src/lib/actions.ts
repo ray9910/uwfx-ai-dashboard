@@ -54,3 +54,10 @@ export async function suggestTickersAction(query: string) {
     return { success: false, error: 'An unknown error occurred.' };
   }
 }
+
+export async function checkApiKeys() {
+  return {
+    twelveData: !!process.env.TWELVE_DATA_API_KEY,
+    newsApi: !!process.env.NEWS_API_KEY,
+  };
+}
