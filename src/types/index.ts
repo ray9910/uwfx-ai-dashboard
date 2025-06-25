@@ -4,6 +4,7 @@ export type TradeIdea = GenerateTradingIdeaOutput & {
   id: string;
   status: 'Open' | 'Closed';
   timestamp: string;
+  userNotes?: string;
 };
 
 export type ChartDataPoint = {

@@ -1,13 +1,17 @@
 'use client';
 
+import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { TradeIdea } from '@/types';
-import { BookOpen, TrendingUp, TrendingDown, Target, Shield, Percent, Bot } from 'lucide-react';
+import { BookOpen, TrendingUp, TrendingDown, Target, Shield, Percent, Bot, Pencil, Check } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
+import { useAppContext } from '@/context/app-provider';
+import { Button } from '../ui/button';
+import { Textarea } from '../ui/textarea';
 
 interface TradeJournalCardProps {
   journal: TradeIdea[];
@@ -34,6 +38,24 @@ const StatItem = ({ label, value, variant, icon }: { label: string; value: strin
 };
 
 export function TradeJournalCard({ journal, className, isGenerating, hideHeader = false }: TradeJournalCardProps) {
+  const { updateTradeNotes } = useAppContext();
+  const [editingNoteId, setEditingNoteId] = React.useState<string | null>(null);
+  const [currentNote, setCurrentNote] = React.useState('');
+
+  const handleEditClick = (trade: TradeIdea) => {
+    setEditingNoteId(trade.id);
+    setCurrentNote(trade.userNotes || '');
+  };
+
+  const handleSaveClick = (tradeId: string) => {
+    updateTradeNotes(tradeId, currentNote);
+    setEditingNoteId(null);
+  };
+
+  const handleCancelClick = () => {
+    setEditingNoteId(null);
+  };
+
   return (
     <Card className={cn(className, "flex flex-col")}>
       {!hideHeader && (
@@ -64,46 +86,82 @@ export function TradeJournalCard({ journal, className, isGenerating, hideHeader 
                 </Card>
             )}
             {journal.length > 0 ? (
-              journal.map((trade) => (
-                <AccordionItem value={trade.id} key={trade.id} className="border-b-0">
-                  <Card className="overflow-hidden">
-                    <AccordionTrigger className="p-4 hover:no-underline hover:bg-muted/50">
-                        <div className="flex flex-1 items-center justify-between gap-4">
-                            <div className='flex items-center gap-3'>
-                                <div className={cn("p-2 rounded-full", trade.direction === 'LONG' ? 'bg-success' : 'bg-destructive-muted')}>
-                                    {trade.direction === 'LONG' ? <TrendingUp className="h-5 w-5 text-success-strong" /> : <TrendingDown className="h-5 w-5 text-destructive" />}
+              journal.map((trade) => {
+                const isEditing = editingNoteId === trade.id;
+                return (
+                  <AccordionItem value={trade.id} key={trade.id} className="border-b-0">
+                    <Card className="overflow-hidden">
+                      <AccordionTrigger className="p-4 hover:no-underline hover:bg-muted/50" onOpenChange={(isOpen) => !isOpen && setEditingNoteId(null)}>
+                          <div className="flex flex-1 items-center justify-between gap-4">
+                              <div className='flex items-center gap-3'>
+                                  <div className={cn("p-2 rounded-full", trade.direction === 'LONG' ? 'bg-success' : 'bg-destructive-muted')}>
+                                      {trade.direction === 'LONG' ? <TrendingUp className="h-5 w-5 text-success-strong" /> : <TrendingDown className="h-5 w-5 text-destructive" />}
+                                  </div>
+                                  <div>
+                                      <p className="font-bold text-base">{trade.ticker}</p>
+                                      <p className="text-xs text-muted-foreground">{new Date(trade.timestamp).toLocaleString()}</p>
+                                  </div>
+                              </div>
+                              <div className='flex items-center gap-4'>
+                                  <Badge variant={trade.direction === 'LONG' ? 'default' : 'destructive'} className={cn(trade.direction === 'LONG' ? "bg-success text-success-foreground" : "bg-destructive-muted text-destructive-muted-foreground")}>{trade.direction}</Badge>
+                                  <Badge variant="secondary">{trade.status}</Badge>
+                              </div>
+                          </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="p-4 pt-0">
+                        <div className="space-y-6">
+                          <div className="flex flex-col sm:flex-row gap-4">
+                            <StatItem label="Entry" value={`$${trade.entry.toFixed(2)}`} icon={<TrendingUp size={16}/>} />
+                            <StatItem label="Stop Loss" value={`$${trade.stopLoss.toFixed(2)}`} variant="negative" icon={<Shield size={16}/>}/>
+                            <StatItem label="Confidence" value={`${trade.confidence}%`} icon={<Percent size={16}/>}/>
+                          </div>
+                           <div className="flex flex-col sm:flex-row gap-4">
+                            <StatItem label="Take Profit 1" value={`$${trade.takeProfit1.toFixed(2)}`} variant="positive" icon={<Target size={16}/>}/>
+                            <StatItem label="Take Profit 2" value={`$${trade.takeProfit2.toFixed(2)}`} variant="positive" icon={<Target size={16}/>}/>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold mb-2 text-sm flex items-center gap-2"><Bot size={16}/> Rationale</h4>
+                            <p className="text-sm text-muted-foreground bg-background p-3 rounded-lg border">{trade.rationale}</p>
+                          </div>
+
+                           <div>
+                            <h4 className="font-semibold mb-2 text-sm flex items-center gap-2"><Pencil size={16}/> My Thoughts</h4>
+                            {isEditing ? (
+                              <div className="space-y-2">
+                                <Textarea
+                                  placeholder="Add your thoughts on this trade..."
+                                  value={currentNote}
+                                  onChange={(e) => setCurrentNote(e.target.value)}
+                                  rows={4}
+                                  className="text-sm"
+                                />
+                                <div className="flex gap-2">
+                                  <Button size="sm" onClick={() => handleSaveClick(trade.id)}>
+                                    <Check size={16} /> Save
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={handleCancelClick}>
+                                    Cancel
+                                  </Button>
                                 </div>
-                                <div>
-                                    <p className="font-bold text-base">{trade.ticker}</p>
-                                    <p className="text-xs text-muted-foreground">{new Date(trade.timestamp).toLocaleString()}</p>
-                                </div>
-                            </div>
-                            <div className='flex items-center gap-4'>
-                                <Badge variant={trade.direction === 'LONG' ? 'default' : 'destructive'} className={cn(trade.direction === 'LONG' ? "bg-success text-success-foreground" : "bg-destructive-muted text-destructive-muted-foreground")}>{trade.direction}</Badge>
-                                <Badge variant="secondary">{trade.status}</Badge>
-                            </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-start justify-between gap-4">
+                                <p className="text-sm text-muted-foreground bg-background p-3 rounded-lg border flex-1 whitespace-pre-wrap min-h-[100px]">
+                                  {trade.userNotes || 'Click "Edit" to add your notes.'}
+                                </p>
+                                <Button size="sm" variant="outline" onClick={() => handleEditClick(trade)}>
+                                  <Pencil size={16} /> Edit
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+
                         </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="p-4 pt-0">
-                      <div className="space-y-4">
-                        <div className="flex flex-col sm:flex-row gap-4">
-                          <StatItem label="Entry" value={`$${trade.entry.toFixed(2)}`} icon={<TrendingUp size={16}/>} />
-                          <StatItem label="Stop Loss" value={`$${trade.stopLoss.toFixed(2)}`} variant="negative" icon={<Shield size={16}/>}/>
-                          <StatItem label="Confidence" value={`${trade.confidence}%`} icon={<Percent size={16}/>}/>
-                        </div>
-                         <div className="flex flex-col sm:flex-row gap-4">
-                          <StatItem label="Take Profit 1" value={`$${trade.takeProfit1.toFixed(2)}`} variant="positive" icon={<Target size={16}/>}/>
-                          <StatItem label="Take Profit 2" value={`$${trade.takeProfit2.toFixed(2)}`} variant="positive" icon={<Target size={16}/>}/>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold mb-2 text-sm flex items-center gap-2"><Bot size={16}/> Rationale</h4>
-                          <p className="text-sm text-muted-foreground bg-background p-3 rounded-lg border">{trade.rationale}</p>
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </Card>
-                </AccordionItem>
-              ))
+                      </AccordionContent>
+                    </Card>
+                  </AccordionItem>
+                )
+              })
             ) : !isGenerating ? (
                <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 border rounded-lg h-80">
                   <Bot className="h-12 w-12 mb-4" />
