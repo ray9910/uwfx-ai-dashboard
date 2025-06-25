@@ -1,5 +1,6 @@
 'use client';
 import * as React from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Sidebar,
@@ -44,21 +45,27 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <SidebarMenuButton href="/" isActive={pathname === '/'} tooltip="Dashboard">
-                                <CandlestickChart />
-                                <span>Dashboard</span>
+                            <SidebarMenuButton asChild isActive={pathname === '/'} tooltip="Dashboard">
+                                <Link href="/">
+                                    <CandlestickChart />
+                                    <span>Dashboard</span>
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton href="/journal" isActive={pathname === '/journal'} tooltip="Trade Journal">
-                                <BookOpen />
-                                <span>Trade Journal</span>
+                            <SidebarMenuButton asChild isActive={pathname === '/journal'} tooltip="Trade Journal">
+                                <Link href="/journal">
+                                    <BookOpen />
+                                    <span>Trade Journal</span>
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton href="#" tooltip="AI Settings">
-                                <Bot />
-                                <span>AI Settings</span>
+                            <SidebarMenuButton asChild tooltip="AI Settings">
+                                <Link href="#">
+                                    <Bot />
+                                    <span>AI Settings</span>
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
