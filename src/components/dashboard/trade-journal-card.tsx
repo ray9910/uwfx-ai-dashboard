@@ -92,7 +92,7 @@ export function TradeJournalCard({ journal, className, isGenerating, hideHeader 
       <CardContent className={cn("flex-1", { "pt-6": hideHeader })}>
         <AlertDialog>
           <ScrollArea className="h-[600px] pr-4">
-            <Accordion type="single" collapsible className="w-full space-y-4">
+            <Accordion type="single" collapsible className="w-full space-y-4" onValueChange={() => setEditingNoteId(null)}>
               {isGenerating && (
                   <Card>
                       <CardContent className="p-6">
@@ -112,7 +112,7 @@ export function TradeJournalCard({ journal, className, isGenerating, hideHeader 
                   return (
                     <AccordionItem value={trade.id} key={trade.id} className="border-b-0">
                       <Card className="overflow-hidden">
-                        <AccordionTrigger className="p-4 hover:no-underline hover:bg-muted/50" onOpenChange={(isOpen) => !isOpen && setEditingNoteId(null)}>
+                        <AccordionTrigger className="p-4 hover:no-underline hover:bg-muted/50">
                             <div className="flex flex-1 items-center justify-between gap-4">
                                 <div className='flex items-center gap-3'>
                                     <div className={cn("p-2 rounded-full", trade.direction === 'LONG' ? 'bg-success' : 'bg-destructive-muted')}>
