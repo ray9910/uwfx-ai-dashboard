@@ -19,20 +19,16 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-semibold">AI Trading Desk</h1>
         </header>
 
-        <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1">
-          <div className="lg:col-span-1">
-            <TradeIdeaGeneratorCard
-              isGenerating={isGenerating}
-              onGenerate={handleGenerateIdea}
-              credits={credits}
-            />
-          </div>
-          <div className="lg:col-span-2">
-            <TradeJournalCard
-              journal={tradeJournal}
-              isGenerating={isGenerating}
-            />
-          </div>
+        <main className="flex flex-col gap-8">
+          <TradeIdeaGeneratorCard
+            isGenerating={isGenerating}
+            onGenerate={handleGenerateIdea}
+            credits={credits}
+          />
+          <TradeJournalCard
+            journal={tradeJournal}
+            isGenerating={isGenerating}
+          />
         </main>
       </div>
     </div>
