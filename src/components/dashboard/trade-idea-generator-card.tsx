@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as htmlToImage from 'html-to-image';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -15,6 +16,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { useDebounce } from '@/hooks/use-debounce';
 import type { TickerSuggestion } from '@/types';
 import { suggestTickersAction } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
+import { ChartPreviewCard } from './chart-preview-card';
 
 const formSchema = z.object({
   query: z.string().min(1, 'Please select a valid asset.'),
@@ -31,11 +34,14 @@ interface TradeIdeaGeneratorCardProps {
 }
 
 export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: TradeIdeaGeneratorCardProps) {
+  const { toast } = useToast();
   const [screenshotPreview, setScreenshotPreview] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [suggestions, setSuggestions] = React.useState<TickerSuggestion[]>([]);
   const [isSuggestionsLoading, setIsSuggestionsLoading] = React.useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
+  const [previewSymbol, setPreviewSymbol] = React.useState<string | null>(null);
+  const chartPreviewRef = React.useRef<HTMLDivElement>(null);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -49,7 +55,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
 
   React.useEffect(() => {
     const fetchSuggestions = async () => {
-      if (debouncedSearchQuery.length < 2) {
+      if (debouncedSearchQuery.length < 1) {
         setSuggestions([]);
         return;
       }
@@ -79,16 +85,39 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
     }
   };
 
-  const onSubmit = (values: FormValues) => {
-    onGenerate(values.query, values.tradingStyle, screenshotPreview);
+  const onSubmit = async (values: FormValues) => {
+    let finalScreenshotDataUri = screenshotPreview;
+
+    if (!finalScreenshotDataUri && chartPreviewRef.current) {
+      try {
+        finalScreenshotDataUri = await htmlToImage.toPng(chartPreviewRef.current, {
+          backgroundColor: document.documentElement.classList.contains('dark') ? '#0c0a09' : '#ffffff',
+          // Ensure the iframe content is loaded before capturing
+          // This is a simple delay, more robust solutions might be needed for complex charts
+          imageTimeout: 2000, 
+        });
+      } catch (error) {
+        console.error('Could not generate chart screenshot:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Screenshot Failed',
+          description: 'Could not capture chart. Please upload one manually or try again.',
+        });
+      }
+    }
+
+    onGenerate(values.query, values.tradingStyle, finalScreenshotDataUri);
     form.reset({ query: values.query, tradingStyle: values.tradingStyle, screenshot: undefined });
     setScreenshotPreview(null);
+    setPreviewSymbol(values.query); // Keep the preview visible after generation
   };
 
   const handleSuggestionSelect = (suggestion: TickerSuggestion) => {
     form.setValue('query', suggestion.symbol);
     setSearchQuery(suggestion.symbol);
+    setPreviewSymbol(suggestion.symbol);
     setIsPopoverOpen(false);
+    setSuggestions([]);
   };
 
   return (
@@ -124,6 +153,12 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
                             onChange={(e) => {
                               setSearchQuery(e.target.value);
                               field.onChange(e.target.value);
+                              if (e.target.value !== form.getValues('query')) {
+                                setPreviewSymbol(null);
+                              }
+                               if (e.target.value.length > 0 && !isPopoverOpen) {
+                                setIsPopoverOpen(true);
+                              }
                             }}
                           />
                         </div>
@@ -160,6 +195,13 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
               )}
             />
 
+            {previewSymbol && !screenshotPreview && (
+              <div className="space-y-2">
+                <FormLabel>Chart Preview</FormLabel>
+                <ChartPreviewCard symbol={previewSymbol} ref={chartPreviewRef} />
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="tradingStyle"
@@ -187,7 +229,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
               name="screenshot"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Upload Chart Screenshot (Optional)</FormLabel>
+                  <FormLabel>Override Screenshot (Optional)</FormLabel>
                   <FormControl>
                     <div className="relative">
                        <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none">
