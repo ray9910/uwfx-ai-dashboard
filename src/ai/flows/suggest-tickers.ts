@@ -31,6 +31,7 @@ export async function suggestTickers(input: SuggestTickersInput): Promise<Ticker
 
 const prompt = ai.definePrompt({
   name: 'suggestTickersPrompt',
+  model: 'googleai/gemini-2.0-flash',
   input: {schema: SuggestTickersInputSchema},
   output: {schema: SuggestTickersOutputSchema},
   prompt: `You are a financial AI assistant. Your task is to suggest stock tickers based on a user's query.
