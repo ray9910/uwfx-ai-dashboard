@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  Bot,
+  Newspaper,
   CandlestickChart,
   CreditCard,
   BookOpen,
@@ -61,10 +61,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild tooltip="AI Settings">
-                                <Link href="#">
-                                    <Bot />
-                                    <span>AI Settings</span>
+                            <SidebarMenuButton asChild isActive={pathname === '/charts'} tooltip="Charts & News">
+                                <Link href="/charts">
+                                    <Newspaper />
+                                    <span>Charts & News</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
