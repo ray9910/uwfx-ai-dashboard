@@ -2,7 +2,7 @@ import type { GenerateTradingIdeaOutput } from "@/ai/flows/generate-trading-idea
 
 export type TradeIdea = GenerateTradingIdeaOutput & {
   id: string;
-  status: 'Open' | 'Closed';
+  status: 'Open' | 'Win' | 'Loss' | 'Break-even';
   timestamp: string;
   userNotes?: string;
 };

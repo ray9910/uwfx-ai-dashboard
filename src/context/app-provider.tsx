@@ -12,6 +12,7 @@ interface AppContextType {
   handleGenerateIdea: (query: string, tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string | null) => Promise<void>;
   updateTradeNotes: (tradeId: string, notes: string) => void;
   deleteTrade: (tradeId: string) => void;
+  updateTradeStatus: (tradeId: string, status: TradeIdea['status']) => void;
 }
 
 const AppContext = React.createContext<AppContextType | null>(null);
@@ -70,6 +71,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         );
         syncJournalToLocalStorage(newJournal);
         return newJournal;
+    });
+  };
+  
+  const updateTradeStatus = (tradeId: string, status: TradeIdea['status']) => {
+    setTradeJournal(prev => {
+      const newJournal = prev.map(trade =>
+        trade.id === tradeId ? { ...trade, status } : trade
+      );
+      syncJournalToLocalStorage(newJournal);
+      return newJournal;
+    });
+    toast({
+      title: 'Trade Status Updated',
+      description: `The trade status has been set to ${status}.`,
     });
   };
 
@@ -140,7 +155,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ tradeJournal, credits, isGenerating, handleGenerateIdea, updateTradeNotes, deleteTrade }}>
+    <AppContext.Provider value={{ tradeJournal, credits, isGenerating, handleGenerateIdea, updateTradeNotes, deleteTrade, updateTradeStatus }}>
       {children}
     </AppContext.Provider>
   );

@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { TradeIdea } from '@/types';
-import { BookOpen, TrendingUp, TrendingDown, Target, Shield, Percent, Bot, Pencil, Check, Trash2 } from 'lucide-react';
+import { BookOpen, TrendingUp, TrendingDown, Target, Shield, Percent, Bot, Pencil, Check, Trash2, ChevronDown, Circle, CheckCircle2, XCircle, MinusCircle } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Separator } from '../ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface TradeJournalCardProps {
   journal: TradeIdea[];
@@ -49,8 +57,22 @@ const StatItem = ({ label, value, variant, icon }: { label: string; value: strin
   )
 };
 
+const StatusBadge = ({ status }: { status: TradeIdea['status'] }) => {
+  if (status === 'Win') {
+    return <Badge className="border-transparent bg-success text-success-foreground hover:bg-success/80">{status}</Badge>;
+  }
+  if (status === 'Loss') {
+    return <Badge variant="destructive">{status}</Badge>;
+  }
+  if (status === 'Break-even') {
+    return <Badge variant="secondary">{status}</Badge>;
+  }
+  return <Badge variant="outline">{status}</Badge>;
+};
+
+
 export function TradeJournalCard({ journal, className, isGenerating, hideHeader = false }: TradeJournalCardProps) {
-  const { updateTradeNotes, deleteTrade } = useAppContext();
+  const { updateTradeNotes, deleteTrade, updateTradeStatus } = useAppContext();
   const [editingNoteId, setEditingNoteId] = React.useState<string | null>(null);
   const [currentNote, setCurrentNote] = React.useState('');
   const [tradeToDelete, setTradeToDelete] = React.useState<TradeIdea | null>(null);
@@ -125,7 +147,7 @@ export function TradeJournalCard({ journal, className, isGenerating, hideHeader 
                                 </div>
                                 <div className='flex items-center gap-4'>
                                     <Badge variant={trade.direction === 'LONG' ? 'default' : 'destructive'} className={cn(trade.direction === 'LONG' ? "bg-success text-success-foreground" : "bg-destructive-muted text-destructive-muted-foreground")}>{trade.direction}</Badge>
-                                    <Badge variant="secondary">{trade.status}</Badge>
+                                    <StatusBadge status={trade.status} />
                                 </div>
                             </div>
                         </AccordionTrigger>
@@ -177,7 +199,37 @@ export function TradeJournalCard({ journal, className, isGenerating, hideHeader 
                               )}
                             </div>
                             <Separator />
-                            <div className="flex justify-end pt-4">
+                            <div className="flex justify-between items-center pt-4">
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="font-semibold text-muted-foreground">Status:</span>
+                                  <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                          <Button variant="outline" className="w-[150px] justify-between">
+                                              {trade.status} <ChevronDown className="h-4 w-4 opacity-50" />
+                                          </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent className="w-[150px]">
+                                          <DropdownMenuLabel>Set Outcome</DropdownMenuLabel>
+                                          <DropdownMenuSeparator />
+                                          <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Open')}>
+                                              <Circle className="mr-2 h-4 w-4" />
+                                              <span>Open</span>
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Win')}>
+                                              <CheckCircle2 className="mr-2 h-4 w-4 text-success-strong" />
+                                              <span>Win</span>
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Loss')}>
+                                              <XCircle className="mr-2 h-4 w-4 text-destructive" />
+                                              <span>Loss</span>
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Break-even')}>
+                                              <MinusCircle className="mr-2 h-4 w-4 text-muted-foreground" />
+                                              <span>Break-even</span>
+                                          </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
                                 <AlertDialogTrigger asChild>
                                     <Button variant="destructive" onClick={() => setTradeToDelete(trade)}>
                                         <Trash2 className="mr-2" />
