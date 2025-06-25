@@ -69,7 +69,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
         finalScreenshotDataUri = await htmlToImage.toPng(chartRef.current, {
           pixelRatio: 1,
           backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
-          imageTimeout: 2000,
+          imageTimeout: 0,
         });
       } catch (error) {
         console.error('Could not generate chart screenshot:', error);
