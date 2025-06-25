@@ -16,7 +16,6 @@ export default function DashboardPage() {
           <div className="hidden md:block">
             <SidebarTrigger />
           </div>
-          <h1 className="text-2xl font-semibold">AI Trading Desk</h1>
         </header>
 
         <main className="flex flex-col gap-8">
