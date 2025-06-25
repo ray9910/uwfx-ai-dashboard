@@ -11,6 +11,7 @@ interface AppContextType {
   isGenerating: boolean;
   handleGenerateIdea: (query: string, tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string | null) => Promise<void>;
   updateTradeNotes: (tradeId: string, notes: string) => void;
+  deleteTrade: (tradeId: string) => void;
 }
 
 const AppContext = React.createContext<AppContextType | null>(null);
@@ -72,6 +73,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const deleteTrade = (tradeId: string) => {
+    setTradeJournal(prev => {
+        const newJournal = prev.filter(trade => trade.id !== tradeId);
+        syncJournalToLocalStorage(newJournal);
+        toast({
+          title: 'Trade Deleted',
+          description: 'The trade idea has been removed from your journal.',
+        })
+        return newJournal;
+    });
+  };
+
   const spendCredit = () => {
     setCredits((prev) => {
       const newCredits = Math.max(0, prev - 1);
@@ -127,7 +140,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ tradeJournal, credits, isGenerating, handleGenerateIdea, updateTradeNotes }}>
+    <AppContext.Provider value={{ tradeJournal, credits, isGenerating, handleGenerateIdea, updateTradeNotes, deleteTrade }}>
       {children}
     </AppContext.Provider>
   );
