@@ -35,16 +35,14 @@ export default function ChartsPage() {
           </div>
         </header>
 
-        {(!apiKeys.twelveData || !apiKeys.newsApi) && (
+        {!apiKeys.twelveData && (
           <Alert variant="destructive" className="mb-8">
             <Terminal className="h-4 w-4" />
-            <AlertTitle>API Key(s) Missing!</AlertTitle>
+            <AlertTitle>API Key Missing!</AlertTitle>
             <AlertDescription>
-              The application is running in a limited mode. Please add your{' '}
-              {!apiKeys.twelveData && <strong>TWELVE_DATA_API_KEY</strong>}
-              {!apiKeys.twelveData && !apiKeys.newsApi && ' and '}
-              {!apiKeys.newsApi && <strong>NEWS_API_KEY</strong>} to the{' '}
-              <code>.env</code> file in the project root to enable all features.
+              The chart functionality is limited. Please add your{' '}
+              <strong>TWELVE_DATA_API_KEY</strong> to the{' '}
+              <code>.env</code> file to enable live chart data.
             </AlertDescription>
           </Alert>
         )}
@@ -56,7 +54,7 @@ export default function ChartsPage() {
             />
           </div>
           <div className="lg:col-span-1">
-            <NewsFeedCard symbol={selectedSymbol} />
+            <NewsFeedCard />
           </div>
         </main>
       </div>

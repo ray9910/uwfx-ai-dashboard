@@ -2,72 +2,71 @@
 
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { getNewsForSymbol } from '@/lib/news';
-import type { NewsArticle } from '@/types';
-import { Skeleton } from '../ui/skeleton';
 import { Newspaper } from 'lucide-react';
-import { Separator } from '../ui/separator';
 
-interface NewsFeedCardProps {
-  symbol: string;
-}
+// This component uses the TradingView Timeline Widget.
+export function NewsFeedCard() {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [theme, setTheme] = React.useState('light');
 
-export function NewsFeedCard({ symbol }: NewsFeedCardProps) {
-  const [news, setNews] = React.useState<NewsArticle[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
+  // Helper function to get the current theme from the document
+  const getAppTheme = () => document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 
+  // Effect to detect theme changes on the root element
   React.useEffect(() => {
-    async function fetchNews() {
-      if (!symbol) return;
-      setIsLoading(true);
-      const articles = await getNewsForSymbol(symbol);
-      setNews(articles);
-      setIsLoading(false);
+    setTheme(getAppTheme()); // Set initial theme
+
+    const observer = new MutationObserver(() => {
+      setTheme(getAppTheme());
+    });
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    return () => observer.disconnect();
+  }, []);
+  
+  // Re-create the widget whenever the theme changes
+  React.useEffect(() => {
+    if (!containerRef.current) {
+      return;
     }
-    fetchNews();
-  }, [symbol]);
+    
+    // Configuration for the TradingView Timeline Widget
+    const widgetConfig = {
+      "displayMode": "regular",
+      "feedMode": "all_symbols",
+      "colorTheme": theme,
+      "isTransparent": false,
+      "locale": "en",
+      "largeChartUrl": "/charts",
+      "width": "100%",
+      "height": "100%"
+    };
+
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js';
+    script.async = true;
+    script.innerHTML = JSON.stringify(widgetConfig);
+
+    // Clear the container and append the new script to re-initialize the widget
+    containerRef.current.innerHTML = '';
+    containerRef.current.appendChild(script);
+
+  }, [theme]);
 
   return (
     <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Newspaper className="h-6 w-6" />
-          <span>Latest News ({symbol})</span>
+          <span>Market Timeline</span>
         </CardTitle>
-        <CardDescription>Top headlines for the selected asset.</CardDescription>
+        <CardDescription>Latest news and events across all markets.</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1">
-        <ScrollArea className="h-[550px] pr-4">
-          {isLoading ? (
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="space-y-2 p-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                  <Skeleton className="h-3 w-1/4" />
-                </div>
-              ))}
-            </div>
-          ) : news.length > 0 ? (
-            <div className="space-y-2">
-              {news.map((article, index) => (
-                <React.Fragment key={article.url}>
-                  <a href={article.url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/50 p-2 rounded-lg transition-colors">
-                    <h3 className="font-semibold text-sm leading-tight">{article.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">{article.source} &middot; {new Date(article.publishedAt).toLocaleDateString()}</p>
-                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{article.description}</p>
-                  </a>
-                  {index < news.length - 1 && <Separator />}
-                </React.Fragment>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center text-muted-foreground pt-10">
-              <p>No news found for {symbol}.</p>
-            </div>
-          )}
-        </ScrollArea>
+      <CardContent className="flex-1 pt-0">
+        {/* This div is the container where the TradingView widget will be rendered */}
+        <div ref={containerRef} className="tradingview-widget-container h-full" />
       </CardContent>
     </Card>
   );
