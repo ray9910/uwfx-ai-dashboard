@@ -4,6 +4,7 @@ import * as React from 'react';
 import { TradeJournalCard } from '@/components/dashboard/trade-journal-card';
 import { useAppContext } from '@/context/app-provider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { BookOpen } from 'lucide-react';
 
 export default function JournalPage() {
     const { tradeJournal, isGenerating } = useAppContext();
@@ -15,10 +16,13 @@ export default function JournalPage() {
                      <div className="hidden md:block">
                         <SidebarTrigger />
                     </div>
-                    <h1 className="text-2xl font-semibold">Trade Journal</h1>
+                    <h1 className="text-2xl font-semibold flex items-center gap-3">
+                        <BookOpen className="h-6 w-6" />
+                        Trade Journal
+                    </h1>
                 </header>
                 <main className="flex-1">
-                    <TradeJournalCard journal={tradeJournal} isGenerating={isGenerating} className="h-full" />
+                    <TradeJournalCard journal={tradeJournal} isGenerating={isGenerating} className="h-full" hideHeader />
                 </main>
             </div>
         </div>

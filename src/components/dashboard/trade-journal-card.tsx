@@ -13,6 +13,7 @@ interface TradeJournalCardProps {
   journal: TradeIdea[];
   className?: string;
   isGenerating?: boolean;
+  hideHeader?: boolean;
 }
 
 const StatItem = ({ label, value, variant, icon }: { label: string; value: string | number; variant?: 'default' | 'positive' | 'negative', icon: React.ReactNode }) => {
@@ -32,19 +33,21 @@ const StatItem = ({ label, value, variant, icon }: { label: string; value: strin
   )
 };
 
-export function TradeJournalCard({ journal, className, isGenerating }: TradeJournalCardProps) {
+export function TradeJournalCard({ journal, className, isGenerating, hideHeader = false }: TradeJournalCardProps) {
   return (
     <Card className={cn(className, "flex flex-col")}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BookOpen className="h-6 w-6" />
-          <span>Trade Journal</span>
-        </CardTitle>
-        <CardDescription>
-            AI-generated trade ideas and analysis. Click on an item to see details.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1">
+      {!hideHeader && (
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="h-6 w-6" />
+            <span>Trade Journal</span>
+          </CardTitle>
+          <CardDescription>
+              AI-generated trade ideas and analysis. Click on an item to see details.
+          </CardDescription>
+        </CardHeader>
+      )}
+      <CardContent className={cn("flex-1", { "pt-6": hideHeader })}>
         <ScrollArea className="h-[600px] pr-4">
           <Accordion type="single" collapsible className="w-full space-y-4">
             {isGenerating && (
