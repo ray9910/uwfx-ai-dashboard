@@ -97,7 +97,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
   };
 
   return (
-    <Card className="sticky top-8">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Bot className="h-6 w-6" />
