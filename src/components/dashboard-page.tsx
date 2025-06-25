@@ -21,19 +21,13 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { Icons } from '@/components/icons';
-import { ChartCard } from './dashboard/chart-card';
 import { TradeIdeaGeneratorCard } from './dashboard/trade-idea-generator-card';
 import { TradeJournalCard } from './dashboard/trade-journal-card';
 import { useToast } from '@/hooks/use-toast';
 import type { TradeIdea } from '@/types';
-import type { GenerateTradingIdeaOutput } from '@/ai/flows/generate-trading-idea';
 import { generateIdeaAction } from '@/lib/actions';
 import { Separator } from './ui/separator';
 import { Progress } from './ui/progress';
-
-type TradeIdeaFormValues = {
-  tradingStyle: 'Day Trader' | 'Swing Trader';
-};
 
 export function DashboardPage() {
   const { toast } = useToast();
@@ -42,10 +36,8 @@ export function DashboardPage() {
   const [credits, setCredits] = React.useState(10);
   
   const [isGenerating, setIsGenerating] = React.useState(false);
-  const [generatedIdea, setGeneratedIdea] = React.useState<GenerateTradingIdeaOutput | null>(null);
-  const [selectedSymbol, setSelectedSymbol] = React.useState('NASDAQ:AAPL');
 
-  const handleGenerateIdea = async (data: TradeIdeaFormValues, screenshotDataUri: string | null) => {
+  const handleGenerateIdea = async (query: string, tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string | null) => {
     if (credits <= 0) {
       toast({
         variant: 'destructive',
@@ -56,16 +48,21 @@ export function DashboardPage() {
     }
     
     setIsGenerating(true);
-    setGeneratedIdea(null);
     setCredits((prev) => prev - 1);
 
-    const result = await generateIdeaAction(selectedSymbol, data.tradingStyle, screenshotDataUri);
+    const result = await generateIdeaAction(query, tradingStyle, screenshotDataUri);
 
     if (result.success && result.data) {
-      setGeneratedIdea(result.data);
+      const newTrade: TradeIdea = {
+        ...result.data,
+        id: crypto.randomUUID(),
+        status: 'Open',
+        timestamp: new Date().toISOString(),
+      };
+      setTradeJournal((prev) => [newTrade, ...prev]);
       toast({
         title: 'New Trading Idea Generated',
-        description: `Review the new idea for ${result.data.ticker} below.`,
+        description: `The new idea for ${result.data.ticker} has been added to your journal.`,
       });
     } else {
       toast({
@@ -76,21 +73,6 @@ export function DashboardPage() {
       setCredits((prev) => prev + 1); // Refund credit on failure
     }
     setIsGenerating(false);
-  };
-
-  const handleSaveToJournal = (idea: GenerateTradingIdeaOutput) => {
-    const newTrade: TradeIdea = {
-      ...idea,
-      id: crypto.randomUUID(),
-      status: 'Open',
-      timestamp: new Date().toISOString(),
-    };
-    setTradeJournal((prev) => [newTrade, ...prev]);
-    setGeneratedIdea(null);
-    toast({
-      title: 'Idea Saved',
-      description: `The trading idea for ${idea.ticker} has been added to your journal.`,
-    });
   };
 
   return (
@@ -165,20 +147,21 @@ export function DashboardPage() {
               <h1 className="text-2xl font-semibold">AI Trading Desk</h1>
             </header>
 
-            <div className="flex-1 grid grid-cols-1 gap-8">
-              <ChartCard 
-                symbol={selectedSymbol}
-                onSymbolChange={setSelectedSymbol}
-              />
-              <TradeIdeaGeneratorCard
-                selectedSymbol={selectedSymbol}
-                isGenerating={isGenerating}
-                generatedIdea={generatedIdea}
-                onGenerate={handleGenerateIdea}
-                onSave={handleSaveToJournal}
-              />
-              <TradeJournalCard journal={tradeJournal} />
-            </div>
+            <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1">
+              <div className="lg:col-span-1">
+                <TradeIdeaGeneratorCard
+                  isGenerating={isGenerating}
+                  onGenerate={handleGenerateIdea}
+                  credits={credits}
+                />
+              </div>
+              <div className="lg:col-span-2">
+                <TradeJournalCard
+                  journal={tradeJournal}
+                  isGenerating={isGenerating}
+                />
+              </div>
+            </main>
           </div>
         </div>
       </SidebarInset>

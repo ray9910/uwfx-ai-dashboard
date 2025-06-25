@@ -24,10 +24,12 @@ export type GenerateTradingIdeaInput = z.infer<typeof GenerateTradingIdeaInputSc
 
 const GenerateTradingIdeaOutputSchema = z.object({
   ticker: z.string().describe('The stock ticker symbol for the trading idea.'),
+  direction: z.enum(['LONG', 'SHORT']).describe('The direction of the trade, either LONG or SHORT.'),
   entry: z.number().describe('Entry price for the trade.'),
   stopLoss: z.number().describe('Stop loss price for the trade.'),
   takeProfit1: z.number().describe('First take profit price for the trade.'),
   takeProfit2: z.number().describe('Second take profit price for the trade.'),
+  confidence: z.number().min(0).max(100).int().describe('A confidence score for the trade idea, from 0 to 100.'),
   rationale: z.string().describe('Rationale for the trading idea, tailored to the trading style.'),
 });
 export type GenerateTradingIdeaOutput = z.infer<typeof GenerateTradingIdeaOutputSchema>;
@@ -65,10 +67,12 @@ Recent News for the identified ticker:
 Provide your response in the following JSON format, including the ticker you identified:
 {
   "ticker": "<identified_ticker_symbol>",
+  "direction": "<LONG_or_SHORT>",
   "entry": <entry_price>,
   "stopLoss": <stop_loss_price>,
   "takeProfit1": <take_profit_1_price>,
   "takeProfit2": <take_profit_2_price>,
+  "confidence": <confidence_score_integer_0_to_100>,
   "rationale": "<rationale_for_the_trade_based_on_query_chart_data_and_news_sentiment>"
 }
 `,
