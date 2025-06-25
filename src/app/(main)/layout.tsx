@@ -25,6 +25,7 @@ import { Icons } from '@/components/icons';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { AppProvider, useAppContext } from '@/context/app-provider';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -86,15 +87,23 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         </SidebarMenuButton>
                     </div>
                     <Separator className="my-2 bg-sidebar-border" />
-                    <div className="flex items-center gap-3 p-2">
-                        <Avatar className="h-9 w-9">
-                            <AvatarImage src="https://placehold.co/100x100.png" alt="User" data-ai-hint="person" />
-                            <AvatarFallback>U</AvatarFallback>
-                        </Avatar>
-                        <div className="group-data-[state=collapsed]:hidden">
-                            <p className="font-semibold text-sm text-sidebar-foreground">User</p>
-                            <p className="text-xs text-sidebar-foreground/70">user@email.com</p>
+                    <div className="flex items-center justify-between gap-3 p-2">
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9">
+                                <AvatarImage src="https://placehold.co/100x100.png" alt="User" data-ai-hint="person" />
+                                <AvatarFallback>U</AvatarFallback>
+                            </Avatar>
+                            <div className="group-data-[state=collapsed]:hidden">
+                                <p className="font-semibold text-sm text-sidebar-foreground">User</p>
+                                <p className="text-xs text-sidebar-foreground/70">user@email.com</p>
+                            </div>
                         </div>
+                        <div className="group-data-[state=collapsed]:hidden">
+                            <ThemeToggle />
+                        </div>
+                    </div>
+                     <div className="hidden p-2 pt-0 group-data-[state=collapsed]:flex group-data-[state=collapsed]:justify-center">
+                        <ThemeToggle />
                     </div>
                 </SidebarFooter>
             </Sidebar>
