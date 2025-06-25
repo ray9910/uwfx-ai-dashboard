@@ -11,47 +11,31 @@ export function NewsFeedCard() {
     const container = containerRef.current;
     if (!container) return;
 
+    // Prevent the widget from re-initializing on re-renders in Strict Mode.
+    if (container.innerHTML !== '') return;
+
     const getTheme = () => document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    const theme = getTheme();
 
-    const createWidget = () => {
-      container.innerHTML = '';
-      
-      const theme = getTheme();
-
-      const widgetConfig = {
-        "displayMode": "regular",
-        "feedMode": "all_symbols",
-        "colorTheme": theme,
-        "isTransparent": true,
-        "locale": "en",
-        "largeChartUrl": "/charts",
-        "width": "100%",
-        "height": "100%"
-      };
-
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js';
-      script.async = true;
-      script.innerHTML = JSON.stringify(widgetConfig);
-      
-      container.appendChild(script);
+    const widgetConfig = {
+      "displayMode": "regular",
+      "feedMode": "all_symbols",
+      "colorTheme": theme,
+      "isTransparent": true,
+      "locale": "en",
+      "largeChartUrl": "/charts",
+      "width": "100%",
+      "height": "100%"
     };
 
-    createWidget();
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js';
+    script.async = true;
+    script.innerHTML = JSON.stringify(widgetConfig);
+    
+    container.appendChild(script);
 
-    const observer = new MutationObserver(() => {
-      createWidget();
-    });
-
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-    return () => {
-      observer.disconnect();
-      if (container) {
-          container.innerHTML = '';
-      }
-    };
   }, []); // This effect runs only once on mount
 
   return (
