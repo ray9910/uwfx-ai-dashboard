@@ -9,7 +9,7 @@ interface AppContextType {
   tradeJournal: TradeIdea[];
   credits: number;
   isGenerating: boolean;
-  handleGenerateIdea: (query: string, tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string | null) => Promise<void>;
+  handleGenerateIdea: (tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string) => Promise<void>;
   updateTradeNotes: (tradeId: string, notes: string) => void;
   deleteTrade: (tradeId: string) => void;
   updateTradeStatus: (tradeId: string, status: TradeIdea['status']) => void;
@@ -116,7 +116,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const handleGenerateIdea = async (query: string, tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string | null) => {
+  const handleGenerateIdea = async (tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string) => {
     if (credits <= 0) {
       toast({
         variant: 'destructive',
@@ -129,7 +129,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setIsGenerating(true);
     spendCredit();
 
-    const result = await generateIdeaAction(query, tradingStyle, screenshotDataUri);
+    const result = await generateIdeaAction(tradingStyle, screenshotDataUri);
 
     if (result.success && result.data) {
       const newTrade: TradeIdea = {

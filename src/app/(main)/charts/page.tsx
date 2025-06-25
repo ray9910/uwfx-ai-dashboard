@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal, Newspaper } from 'lucide-react';
 import { MarketChartCard } from '@/components/dashboard/market-chart-card';
 import { NewsFeedCard } from '@/components/dashboard/news-feed-card';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function ChartsPage() {
   const [apiKeys, setApiKeys] = React.useState({ twelveData: true, newsApi: true });
@@ -49,9 +50,14 @@ export default function ChartsPage() {
 
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1">
           <div className="lg:col-span-2">
-            <MarketChartCard 
-              symbol={selectedSymbol} 
-            />
+            <Card className="h-[550px] bg-transparent">
+              <CardContent className="pt-6 h-full">
+                <MarketChartCard 
+                  symbol={selectedSymbol} 
+                  className="h-full"
+                />
+              </CardContent>
+            </Card>
           </div>
           <div className="lg:col-span-1">
             <NewsFeedCard />

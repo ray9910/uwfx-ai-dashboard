@@ -8,19 +8,13 @@ import * as htmlToImage from 'html-to-image';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bot, Lightbulb, Loader, Upload, ImageIcon, Search, CreditCard } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { useDebounce } from '@/hooks/use-debounce';
-import type { TickerSuggestion } from '@/types';
-import { suggestTickersAction } from '@/lib/actions';
+import { Bot, Lightbulb, Loader, CreditCard, Upload, ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { ChartPreviewCard } from './chart-preview-card';
+import { MarketChartCard } from './market-chart-card';
+import { Input } from '../ui/input';
 
 const formSchema = z.object({
-  query: z.string().min(1, 'Please select a valid asset.'),
   tradingStyle: z.enum(['Day Trader', 'Swing Trader']),
   screenshot: z.any().optional(),
 });
@@ -29,48 +23,21 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface TradeIdeaGeneratorCardProps {
   isGenerating: boolean;
-  onGenerate: (query: string, tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string | null) => void;
+  onGenerate: (tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string) => void;
   credits: number;
 }
 
 export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: TradeIdeaGeneratorCardProps) {
   const { toast } = useToast();
+  const chartRef = React.useRef<HTMLDivElement>(null);
   const [screenshotPreview, setScreenshotPreview] = React.useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [suggestions, setSuggestions] = React.useState<TickerSuggestion[]>([]);
-  const [isSuggestionsLoading, setIsSuggestionsLoading] = React.useState(false);
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
-  const [previewSymbol, setPreviewSymbol] = React.useState<string | null>(null);
-  const chartPreviewRef = React.useRef<HTMLDivElement>(null);
-
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      query: '',
       tradingStyle: 'Swing Trader',
     },
   });
-
-  React.useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (debouncedSearchQuery.length < 1) {
-        setSuggestions([]);
-        return;
-      }
-      setIsSuggestionsLoading(true);
-      const result = await suggestTickersAction(debouncedSearchQuery);
-      if (result.success && result.data) {
-        setSuggestions(result.data);
-      } else {
-        setSuggestions([]);
-      }
-      setIsSuggestionsLoading(false);
-    };
-
-    fetchSuggestions();
-  }, [debouncedSearchQuery]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -86,38 +53,47 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
   };
 
   const onSubmit = async (values: FormValues) => {
-    let finalScreenshotDataUri = screenshotPreview;
+    let finalScreenshotDataUri: string | null = screenshotPreview;
 
-    if (!finalScreenshotDataUri && chartPreviewRef.current) {
+    if (!finalScreenshotDataUri) {
+      if (!chartRef.current) {
+        toast({
+          variant: 'destructive',
+          title: 'Chart Error',
+          description: 'Could not find the chart to screenshot.',
+        });
+        return;
+      }
+
       try {
-        finalScreenshotDataUri = await htmlToImage.toPng(chartPreviewRef.current, {
-          backgroundColor: document.documentElement.classList.contains('dark') ? '#0c0a09' : '#ffffff',
-          // Ensure the iframe content is loaded before capturing
-          // This is a simple delay, more robust solutions might be needed for complex charts
-          imageTimeout: 2000, 
+        finalScreenshotDataUri = await htmlToImage.toPng(chartRef.current, {
+          pixelRatio: 1,
+          backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+          imageTimeout: 2000,
         });
       } catch (error) {
         console.error('Could not generate chart screenshot:', error);
         toast({
           variant: 'destructive',
           title: 'Screenshot Failed',
-          description: 'Could not capture chart. Please upload one manually or try again.',
+          description: 'Could not capture chart. Please try again or provide a manual upload.',
         });
+        return;
       }
     }
 
-    onGenerate(values.query, values.tradingStyle, finalScreenshotDataUri);
-    form.reset({ query: values.query, tradingStyle: values.tradingStyle, screenshot: undefined });
+    if (!finalScreenshotDataUri) {
+        toast({
+            variant: 'destructive',
+            title: 'Screenshot Missing',
+            description: 'Could not generate or find a screenshot for analysis.',
+        });
+        return;
+    }
+    
+    onGenerate(values.tradingStyle, finalScreenshotDataUri);
+    form.reset({ tradingStyle: values.tradingStyle, screenshot: undefined });
     setScreenshotPreview(null);
-    setPreviewSymbol(values.query); // Keep the preview visible after generation
-  };
-
-  const handleSuggestionSelect = (suggestion: TickerSuggestion) => {
-    form.setValue('query', suggestion.symbol);
-    setSearchQuery(suggestion.symbol);
-    setPreviewSymbol(suggestion.symbol);
-    setIsPopoverOpen(false);
-    setSuggestions([]);
   };
 
   return (
@@ -128,79 +104,18 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
           <span>AI Trade Generator</span>
         </CardTitle>
         <CardDescription>
-          Select an asset, your trading style, and let the AI find your next trade.
+          Adjust the chart below, select your trading style, and let the AI find your next trade.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
-            <FormField
-              control={form.control}
-              name="query"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Asset Symbol or Company</FormLabel>
-                  <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            placeholder="e.g. 'Apple' or 'AAPL'"
-                            className="pl-10"
-                            autoComplete="off"
-                            value={searchQuery}
-                            onChange={(e) => {
-                              setSearchQuery(e.target.value);
-                              field.onChange(e.target.value);
-                              if (e.target.value !== form.getValues('query')) {
-                                setPreviewSymbol(null);
-                              }
-                               if (e.target.value.length > 0 && !isPopoverOpen) {
-                                setIsPopoverOpen(true);
-                              }
-                            }}
-                          />
-                        </div>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                      <Command>
-                        <CommandInput
-                          placeholder="Search for a stock..."
-                          value={searchQuery}
-                          onValueChange={setSearchQuery}
-                          isLoading={isSuggestionsLoading}
-                        />
-                        <CommandList>
-                          <CommandEmpty>No results found.</CommandEmpty>
-                          <CommandGroup>
-                            {suggestions.map((suggestion) => (
-                              <CommandItem
-                                key={suggestion.symbol}
-                                value={`${suggestion.symbol} - ${suggestion.companyName}`}
-                                onSelect={() => handleSuggestionSelect(suggestion)}
-                              >
-                                <strong>{suggestion.symbol}</strong>
-                                <span className="ml-2 text-muted-foreground">{suggestion.companyName}</span>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {previewSymbol && !screenshotPreview && (
-              <div className="space-y-2">
-                <FormLabel>Chart Preview</FormLabel>
-                <ChartPreviewCard symbol={previewSymbol} ref={chartPreviewRef} />
+            <div>
+              <FormLabel>Live Chart</FormLabel>
+              <div className="h-[400px] mt-2 rounded-lg border overflow-hidden bg-background">
+                <MarketChartCard ref={chartRef} symbol="NASDAQ:AAPL" className="h-full" />
               </div>
-            )}
+            </div>
 
             <FormField
               control={form.control}
