@@ -4,19 +4,19 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as htmlToImage from 'html-to-image';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Bot, Lightbulb, Loader, CreditCard, Upload, ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { MarketChartCard } from './market-chart-card';
 import { Input } from '../ui/input';
 
 const formSchema = z.object({
   tradingStyle: z.enum(['Day Trader', 'Swing Trader']),
-  screenshot: z.any().optional(),
+  screenshot: z
+    .any()
+    .refine((files) => files?.length >= 1, 'A chart screenshot is required.'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -29,7 +29,6 @@ interface TradeIdeaGeneratorCardProps {
 
 export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: TradeIdeaGeneratorCardProps) {
   const { toast } = useToast();
-  const chartRef = React.useRef<HTMLDivElement>(null);
   const [screenshotPreview, setScreenshotPreview] = React.useState<string | null>(null);
 
   const form = useForm<FormValues>({
@@ -53,45 +52,16 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
   };
 
   const onSubmit = async (values: FormValues) => {
-    let finalScreenshotDataUri: string | null = screenshotPreview;
-
-    if (!finalScreenshotDataUri) {
-      if (!chartRef.current) {
-        toast({
-          variant: 'destructive',
-          title: 'Chart Error',
-          description: 'Could not find the chart to screenshot.',
-        });
-        return;
-      }
-
-      try {
-        finalScreenshotDataUri = await htmlToImage.toPng(chartRef.current, {
-          pixelRatio: 1,
-          backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
-          imageTimeout: 0,
-        });
-      } catch (error) {
-        console.error('Could not generate chart screenshot:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Screenshot Failed',
-          description: 'Could not capture chart. Please try again or provide a manual upload.',
-        });
-        return;
-      }
-    }
-
-    if (!finalScreenshotDataUri) {
+    if (!screenshotPreview) {
         toast({
             variant: 'destructive',
             title: 'Screenshot Missing',
-            description: 'Could not generate or find a screenshot for analysis.',
+            description: 'Please upload a chart screenshot for analysis.',
         });
         return;
     }
     
-    onGenerate(values.tradingStyle, finalScreenshotDataUri);
+    onGenerate(values.tradingStyle, screenshotPreview);
     form.reset({ tradingStyle: values.tradingStyle, screenshot: undefined });
     setScreenshotPreview(null);
   };
@@ -104,19 +74,12 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
           <span>AI Trade Generator</span>
         </CardTitle>
         <CardDescription>
-          Adjust the chart below, select your trading style, and let the AI find your next trade.
+          Upload a chart screenshot, select your trading style, and let the AI find your next trade.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
-            <div>
-              <FormLabel>Live Chart</FormLabel>
-              <div className="h-[550px] mt-2 rounded-lg border overflow-hidden bg-background">
-                <MarketChartCard ref={chartRef} symbol="NASDAQ:AAPL" className="h-full" />
-              </div>
-            </div>
-
             <FormField
               control={form.control}
               name="tradingStyle"
@@ -144,7 +107,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
               name="screenshot"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Override Screenshot (Optional)</FormLabel>
+                  <FormLabel>Upload Chart Screenshot</FormLabel>
                   <FormControl>
                     <div className="relative">
                        <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none">
