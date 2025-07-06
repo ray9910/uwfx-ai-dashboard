@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { fetchNewsTool } from '../tools/fetch-news-tool';
 
 const GenerateTradingIdeaInputSchema = z.object({
   tradingStyle: z.enum(['Day Trader', 'Swing Trader']).describe('The trading style for the idea.'),
@@ -27,7 +28,7 @@ const GenerateTradingIdeaOutputSchema = z.object({
   takeProfit1: z.number().describe('First take profit price for the trade.'),
   takeProfit2: z.number().describe('Second take profit price for the trade.'),
   confidence: z.number().min(0).max(100).int().describe('A confidence score for the trade idea, from 0 to 100.'),
-  rationale: z.string().describe('Comprehensive rationale for the trading idea, based purely on technical analysis of the chart (including candlestick patterns).'),
+  rationale: z.string().describe('Comprehensive rationale for the trading idea, based on technical analysis of the chart (including candlestick patterns) and fundamental news analysis.'),
 });
 export type GenerateTradingIdeaOutput = z.infer<typeof GenerateTradingIdeaOutputSchema>;
 
@@ -41,9 +42,10 @@ const prompt = ai.definePrompt({
   model: 'googleai/gemini-2.0-flash',
   input: {schema: GenerateTradingIdeaInputSchema},
   output: {schema: GenerateTradingIdeaOutputSchema},
-  prompt: `You are an expert trading signal generator and stock market analyst, skilled in technical analysis.
+  tools: [fetchNewsTool],
+  prompt: `You are an expert trading signal generator and stock market analyst, skilled in both technical and fundamental analysis.
 
-Your task is to generate a structured trading idea based *only* on the technical analysis of a user-provided chart screenshot.
+Your task is to generate a structured trading idea based on a combination of a user-provided chart screenshot and recent news sentiment.
 
 Here is your process:
 
@@ -53,11 +55,13 @@ Here is your process:
     *   Identify key support and resistance levels, trendlines, and chart patterns (e.g., head and shoulders, triangles, flags).
     *   **Pay special attention to candlestick patterns.** Look for formations like dojis, hammers, engulfing patterns, or morning/evening stars that indicate potential reversals or continuations.
 
-3.  **Synthesize your technical analysis to create a cohesive trading idea.** Your rationale must clearly explain how the chart analysis (including candlesticks) supports your proposed trade. The idea should be tailored to the "{{{tradingStyle}}}" trading style.
+3.  **Then, use the \`fetchStockNews\` tool to get a summary of recent news for the identified ticker.** This provides crucial fundamental context. Do not use the tool if you cannot identify a ticker.
+
+4.  **Synthesize your technical analysis and the news summary to create a cohesive trading idea.** Your rationale must clearly explain how both the chart analysis (including candlesticks) and the fundamental news context support your proposed trade. The idea should be tailored to the "{{{tradingStyle}}}" trading style.
     *   A "Day Trader" focuses on very short-term price movements. Your price targets and stop loss should be tight.
     *   A "Swing Trader" aims to capture gains over days or weeks. Your price targets and stop loss can be wider.
 
-4.  **Provide your full response in the specified JSON format.** The rationale should be comprehensive, referencing specific chart patterns and candlestick formations.
+5.  **Provide your full response in the specified JSON format.** The rationale should be comprehensive, referencing specific chart patterns, candlestick formations, and the news summary.
 
 User-provided screenshot:
 {{media url=screenshotDataUri}}
@@ -71,7 +75,7 @@ Provide your response in the following JSON format:
   "takeProfit1": <take_profit_1_price>,
   "takeProfit2": <take_profit_2_price>,
   "confidence": <confidence_score_integer_0_to_100>,
-  "rationale": "<comprehensive_rationale_based_on_technical_and_candlestick_analysis_only>"
+  "rationale": "<comprehensive_rationale_based_on_technical_and_fundamental_news_analysis>"
 }
 `,
 });
