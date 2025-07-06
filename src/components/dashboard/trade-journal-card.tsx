@@ -38,6 +38,7 @@ interface TradeJournalCardProps {
   className?: string;
   isGenerating?: boolean;
   hideHeader?: boolean;
+  searchQuery?: string;
 }
 
 const StatItem = ({ label, value, variant, icon }: { label: string; value: string | number; variant?: 'default' | 'positive' | 'negative', icon: React.ReactNode }) => {
@@ -71,7 +72,7 @@ const StatusBadge = ({ status }: { status: TradeIdea['status'] }) => {
 };
 
 
-export function TradeJournalCard({ journal, className, isGenerating, hideHeader = false }: TradeJournalCardProps) {
+export function TradeJournalCard({ journal, className, isGenerating, hideHeader = false, searchQuery }: TradeJournalCardProps) {
   const { updateTradeNotes, deleteTrade, updateTradeStatus } = useAppContext();
   const [editingNoteId, setEditingNoteId] = React.useState<string | null>(null);
   const [currentNote, setCurrentNote] = React.useState('');
@@ -246,8 +247,17 @@ export function TradeJournalCard({ journal, className, isGenerating, hideHeader 
               ) : !isGenerating ? (
                  <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 border rounded-lg h-80">
                     <Bot className="h-12 w-12 mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground">No saved trades yet.</h3>
-                    <p>Use the generator to create your first AI-powered trade idea.</p>
+                    {searchQuery && searchQuery.length > 0 ? (
+                      <>
+                        <h3 className="text-lg font-semibold text-foreground">No trades found.</h3>
+                        <p>Try searching for a different ticker.</p>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="text-lg font-semibold text-foreground">No saved trades yet.</h3>
+                        <p>Use the generator to create your first AI-powered trade idea.</p>
+                      </>
+                    )}
                   </div>
               ) : null}
             </Accordion>
