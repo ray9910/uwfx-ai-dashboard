@@ -20,11 +20,3 @@ export type TickerSuggestion = {
   symbol: string;
   companyName: string;
 };
-
-export type NewsArticle = {
-  title: string;
-  description: string;
-  url: string;
-  source: string;
-  publishedAt: string;
-};

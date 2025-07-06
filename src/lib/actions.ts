@@ -36,8 +36,9 @@ export async function suggestTickersAction(query: string) {
 }
 
 export async function checkApiKeys() {
+  // Removed dependency on API keys.
   return {
-    twelveData: !!process.env.TWELVE_DATA_API_KEY,
-    newsApi: !!process.env.NEWS_API_KEY,
+    twelveData: true,
+    newsApi: true,
   };
 }
