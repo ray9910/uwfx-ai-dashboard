@@ -22,7 +22,7 @@ export async function summarizeNewsData(input: SummarizeNewsDataInput): Promise<
 
 const prompt = ai.definePrompt({
   name: 'summarizeNewsDataPrompt',
-  model: 'googleai/gemini-1.5-pro',
+  model: (process.env.GOOGLE_AI_MODEL as any) || 'googleai/gemini-1.5-pro',
   input: {schema: SummarizeNewsDataInputSchema},
   output: {schema: SummarizeNewsDataOutputSchema},
   prompt: `You are an AI assistant that summarizes news data related to a particular stock.

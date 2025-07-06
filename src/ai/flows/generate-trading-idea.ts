@@ -38,7 +38,7 @@ export async function generateTradingIdea(input: GenerateTradingIdeaInput): Prom
 
 const prompt = ai.definePrompt({
   name: 'generateTradingIdeaPrompt',
-  model: 'googleai/gemini-1.5-pro',
+  model: (process.env.GOOGLE_AI_MODEL as any) || 'googleai/gemini-1.5-pro',
   input: {schema: GenerateTradingIdeaInputSchema},
   output: {schema: GenerateTradingIdeaOutputSchema},
   prompt: `You are an expert trading signal generator and stock market analyst, skilled in technical analysis.
