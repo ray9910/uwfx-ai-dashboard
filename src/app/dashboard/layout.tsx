@@ -113,7 +113,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                     </div>
                     <Separator className="my-2 bg-sidebar-border" />
                     <TooltipProvider delayDuration={0}>
-                      <div className="flex items-center justify-between gap-3 p-2">
+                      <div className="flex items-center justify-between gap-3 p-2 group-data-[state=collapsed]:flex-col group-data-[state=collapsed]:gap-2 group-data-[state=collapsed]:items-center">
                           <div className="flex items-center gap-3">
                               <Avatar className="h-9 w-9">
                                   <AvatarFallback>{user.email?.[0].toUpperCase() ?? 'U'}</AvatarFallback>
@@ -122,28 +122,22 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                   <p className="font-semibold text-sm text-sidebar-foreground max-w-[120px] truncate" title={user.email!}>{user.email}</p>
                               </div>
                           </div>
-                          <div className="group-data-[state=collapsed]:hidden flex items-center">
+                          <div className="flex items-center group-data-[state=collapsed]:flex-col group-data-[state=collapsed]:gap-2">
                               <Tooltip>
                                   <TooltipTrigger asChild>
                                       <Button variant="ghost" size="icon" onClick={signOut} className="h-9 w-9 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                                           <LogOut className="h-5 w-5" />
                                       </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Sign Out</TooltipContent>
+                                  <TooltipContent side="right" className="group-data-[state=expanded]:hidden">Sign Out</TooltipContent>
                               </Tooltip>
-                              <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent side="right" className="group-data-[state=expanded]:hidden">Toggle Theme</TooltipContent>
+                              </Tooltip>
                           </div>
-                      </div>
-                       <div className="hidden p-2 pt-0 group-data-[state=collapsed]:flex group-data-[state=collapsed]:flex-col group-data-[state=collapsed]:gap-2">
-                          <Tooltip>
-                              <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" onClick={signOut} className="h-9 w-9 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                                      <LogOut className="h-5 w-5" />
-                                  </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="right">Sign Out</TooltipContent>
-                          </Tooltip>
-                          <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
                       </div>
                     </TooltipProvider>
                 </SidebarFooter>
