@@ -115,14 +115,22 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                     <Separator className="my-2 bg-sidebar-border" />
                     <TooltipProvider delayDuration={0}>
                       <div className="flex items-center justify-between gap-3 p-2 group-data-[state=collapsed]:flex-col group-data-[state=collapsed]:gap-2 group-data-[state=collapsed]:items-center">
-                          <Link href="/dashboard/profile" className="flex items-center gap-3">
-                              <Avatar className="h-9 w-9">
-                                  <AvatarFallback>{user.email?.[0].toUpperCase() ?? 'U'}</AvatarFallback>
-                              </Avatar>
-                              <div className="group-data-[state=collapsed]:hidden">
-                                  <p className="font-semibold text-sm text-sidebar-foreground max-w-[120px] truncate" title={user.email!}>{user.email}</p>
-                              </div>
-                          </Link>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Link href="/dashboard/profile" className="flex items-center gap-3">
+                                    <Avatar className="h-9 w-9">
+                                        <AvatarFallback>{user.email?.[0].toUpperCase() ?? 'U'}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="group-data-[state=collapsed]:hidden">
+                                        <p className="font-semibold text-sm text-sidebar-foreground max-w-[120px] truncate" title={user.email!}>{user.email}</p>
+                                    </div>
+                                </Link>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="group-data-[state=expanded]:hidden">
+                                Profile Management
+                            </TooltipContent>
+                          </Tooltip>
+
                           <div className="flex items-center group-data-[state=collapsed]:flex-col group-data-[state=collapsed]:gap-2">
                               <Tooltip>
                                   <TooltipTrigger asChild>
