@@ -65,7 +65,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarHeader>
                     <div className="flex items-center gap-2">
                         <Icons.logo className="size-8 text-primary" />
-                        <span className="text-lg font-semibold group-data-[state=expanded]:hidden">Uwfx AI</span>
+                        <span className="text-lg font-semibold group-data-[state=collapsed]:hidden">Uwfx AI</span>
                     </div>
                 </SidebarHeader>
                 <SidebarContent>
