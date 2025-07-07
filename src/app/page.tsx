@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, BarChart, BookOpen, ChevronRight } from 'lucide-react';
+import { Bot, BarChart, BookOpen, ChevronRight, Menu } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { Sheet, SheetClose, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
   <Card className="text-center shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -23,22 +24,70 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-svh bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center">
-          <div className="mr-4 flex items-center">
-            <Icons.logo className="h-8 w-8 text-primary" />
-            <span className="ml-2 text-lg font-bold">Uwfx AI</span>
+        <div className="container flex h-16 items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-2">
+              <Icons.logo className="h-8 w-8 text-primary" />
+              <span className="text-lg font-bold">Uwfx AI</span>
+            </Link>
+            <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+              <Link href="#features" className="transition-colors hover:text-foreground/80 text-foreground/60">Features</Link>
+              <Link href="#pricing" className="transition-colors hover:text-foreground/80 text-foreground/60">Pricing</Link>
+            </nav>
           </div>
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <Link href="#features" className="transition-colors hover:text-foreground/80 text-foreground/60">Features</Link>
-            <Link href="#pricing" className="transition-colors hover:text-foreground/80 text-foreground/60">Pricing</Link>
-          </nav>
-          <div className="flex flex-1 items-center justify-end space-x-4">
-             <ThemeToggle />
+
+          <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle />
             <Button asChild>
               <Link href="/dashboard">
                 Go to Dashboard <ChevronRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
+          </div>
+          
+          <div className="md:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Open main menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <div className="mt-6 flex h-full flex-col">
+                  <div className="flex items-center gap-2">
+                    <Icons.logo className="h-8 w-8 text-primary" />
+                    <span className="text-lg font-bold">Uwfx AI</span>
+                  </div>
+                  <nav className="mt-6 grid gap-4">
+                    <SheetClose asChild>
+                      <Link
+                        href="#features"
+                        className="text-lg font-medium hover:text-primary"
+                      >
+                        Features
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href="#pricing"
+                        className="text-lg font-medium hover:text-primary"
+                      >
+                        Pricing
+                      </Link>
+                    </SheetClose>
+                  </nav>
+                  <div className="mt-auto space-y-4">
+                    <ThemeToggle />
+                    <Button asChild className="w-full">
+                      <Link href="/dashboard">
+                        Go to Dashboard
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
