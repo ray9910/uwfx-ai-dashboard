@@ -122,7 +122,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                   </TooltipTrigger>
                                   <TooltipContent>Sign Out</TooltipContent>
                               </Tooltip>
-                              <ThemeToggle />
+                              <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
                           </div>
                       </div>
                        <div className="hidden p-2 pt-0 group-data-[state=collapsed]:flex group-data-[state=collapsed]:flex-col group-data-[state=collapsed]:gap-2">
@@ -134,7 +134,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                               </TooltipTrigger>
                               <TooltipContent side="right">Sign Out</TooltipContent>
                           </Tooltip>
-                          <ThemeToggle />
+                          <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
                       </div>
                     </TooltipProvider>
                 </SidebarFooter>
