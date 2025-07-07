@@ -28,3 +28,9 @@ export type NewsArticle = {
   source: string;
   publishedAt: string;
 };
+
+export type SignInForm = {
+    email: string;
+    password: string;
+}
+export type SignUpForm = SignInForm;

@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Sidebar,
   SidebarContent,
@@ -14,22 +14,47 @@ import {
   SidebarFooter,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   CandlestickChart,
   CreditCard,
   BookOpen,
+  LogOut,
 } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { AppProvider, useAppContext } from '@/context/app-provider';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useAuth } from '@/context/auth-provider';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const router = useRouter();
     const { credits } = useAppContext();
+    const { user, loading, signOut } = useAuth();
 
+    React.useEffect(() => {
+        if (!loading && !user) {
+            router.replace('/sign-in');
+        }
+    }, [user, loading, router]);
+
+    if (loading || !user) {
+        return (
+            <div className="flex h-svh w-full items-center justify-center bg-background">
+                 <div className="flex flex-col items-center gap-4">
+                    <Icons.logo className="size-12 text-primary animate-pulse" />
+                    <p className="text-muted-foreground">Loading Your Dashboard...</p>
+                 </div>
+            </div>
+        );
+    }
+    
     return (
         <SidebarProvider>
             <div className="md:hidden p-2 fixed top-0 left-0 z-20">
@@ -78,24 +103,40 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         </SidebarMenuButton>
                     </div>
                     <Separator className="my-2 bg-sidebar-border" />
-                    <div className="flex items-center justify-between gap-3 p-2">
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-9 w-9">
-                                <AvatarImage src="https://placehold.co/100x100.png" alt="User" data-ai-hint="person" />
-                                <AvatarFallback>U</AvatarFallback>
-                            </Avatar>
-                            <div className="group-data-[state=collapsed]:hidden">
-                                <p className="font-semibold text-sm text-sidebar-foreground">User</p>
-                                <p className="text-xs text-sidebar-foreground/70">user@email.com</p>
-                            </div>
-                        </div>
-                        <div className="group-data-[state=collapsed]:hidden">
-                            <ThemeToggle />
-                        </div>
-                    </div>
-                     <div className="hidden p-2 pt-0 group-data-[state=collapsed]:flex group-data-[state=collapsed]:justify-center">
-                        <ThemeToggle />
-                    </div>
+                    <TooltipProvider delayDuration={0}>
+                      <div className="flex items-center justify-between gap-3 p-2">
+                          <div className="flex items-center gap-3">
+                              <Avatar className="h-9 w-9">
+                                  <AvatarFallback>{user.email?.[0].toUpperCase() ?? 'U'}</AvatarFallback>
+                              </Avatar>
+                              <div className="group-data-[state=collapsed]:hidden">
+                                  <p className="font-semibold text-sm text-sidebar-foreground max-w-[120px] truncate" title={user.email!}>{user.email}</p>
+                              </div>
+                          </div>
+                          <div className="group-data-[state=collapsed]:hidden flex items-center">
+                              <Tooltip>
+                                  <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" onClick={signOut} className="h-9 w-9 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                                          <LogOut className="h-5 w-5" />
+                                      </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Sign Out</TooltipContent>
+                              </Tooltip>
+                              <ThemeToggle />
+                          </div>
+                      </div>
+                       <div className="hidden p-2 pt-0 group-data-[state=collapsed]:flex group-data-[state=collapsed]:flex-col group-data-[state=collapsed]:gap-2">
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" onClick={signOut} className="h-9 w-9 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                                      <LogOut className="h-5 w-5" />
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="right">Sign Out</TooltipContent>
+                          </Tooltip>
+                          <ThemeToggle />
+                      </div>
+                    </TooltipProvider>
                 </SidebarFooter>
             </Sidebar>
             <SidebarInset className="bg-transparent">

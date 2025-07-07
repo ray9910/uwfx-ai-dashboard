@@ -1,3 +1,6 @@
+'use client';
+
+import * as React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,6 +8,8 @@ import { Bot, BarChart, BookOpen, ChevronRight, Menu } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useAuth } from '@/context/auth-provider';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
   <Card className="text-center shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -21,6 +26,8 @@ const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; titl
 );
 
 export default function LandingPage() {
+  const { user, loading } = useAuth();
+
   return (
     <div className="flex flex-col min-h-svh bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -36,13 +43,26 @@ export default function LandingPage() {
             </nav>
           </div>
 
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2">
             <ThemeToggle />
-            <Button asChild>
-              <Link href="/dashboard">
-                Go to Dashboard <ChevronRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            {loading ? (
+                <Skeleton className="h-10 w-32" />
+            ) : user ? (
+                <Button asChild>
+                <Link href="/dashboard">
+                    Go to Dashboard <ChevronRight className="ml-2 h-4 w-4" />
+                </Link>
+                </Button>
+            ) : (
+                <>
+                <Button variant="ghost" asChild>
+                    <Link href="/sign-in">Sign In</Link>
+                </Button>
+                <Button asChild>
+                    <Link href="/sign-up">Get Started</Link>
+                </Button>
+                </>
+            )}
           </div>
           
           <div className="md:hidden">
@@ -79,11 +99,22 @@ export default function LandingPage() {
                   </nav>
                   <div className="mt-auto space-y-4">
                     <ThemeToggle />
-                    <Button asChild className="w-full">
-                      <Link href="/dashboard">
-                        Go to Dashboard
-                      </Link>
-                    </Button>
+                    {loading ? (
+                        <Skeleton className="h-10 w-full" />
+                    ) : user ? (
+                        <Button asChild className="w-full">
+                            <Link href="/dashboard">Go to Dashboard</Link>
+                        </Button>
+                    ) : (
+                        <>
+                            <Button asChild className="w-full" variant="outline">
+                                <Link href="/sign-in">Sign In</Link>
+                            </Button>
+                             <Button asChild className="w-full">
+                                <Link href="/sign-up">Get Started</Link>
+                            </Button>
+                        </>
+                    )}
                   </div>
                 </div>
               </SheetContent>
@@ -102,7 +133,7 @@ export default function LandingPage() {
               Stop guessing, start winning. Let our AI analyze charts and generate high-probability trade ideas for you.
             </p>
             <Button size="lg" asChild>
-              <Link href="/dashboard">
+              <Link href="/sign-up">
                 Get Started for Free
               </Link>
             </Button>
@@ -154,7 +185,7 @@ export default function LandingPage() {
                         <li>Community support</li>
                     </ul>
                     <Button size="lg" className="w-full" asChild>
-                         <Link href="/dashboard">
+                         <Link href="/sign-up">
                             Start Trading Now
                           </Link>
                     </Button>
