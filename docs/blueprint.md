@@ -2,7 +2,7 @@
 
 ## Core Features:
 
-- Data Integration: Fetch news and financial data from NewsAPI and Twelve Data.
+
 - Idea Generation: Generate trading ideas by analyzing chart data and news data using an LLM tool to generated a structured output for a trading signal. ( ENTRY,SL,TP1,TP2 AND RATIONAL) then spit out a preview with a button to save to the trade journal.
 - Trade Journal: Allow users to save generated trading ideas to a trade journal.
 - Chart Display: Integrate TradingView API to display interactive charts.
