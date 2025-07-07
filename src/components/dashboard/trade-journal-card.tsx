@@ -37,6 +37,7 @@ interface TradeJournalCardProps {
   journal: TradeIdea[];
   className?: string;
   isGenerating?: boolean;
+  isLoading?: boolean;
   hideHeader?: boolean;
   searchQuery?: string;
 }
@@ -71,8 +72,27 @@ const StatusBadge = ({ status }: { status: TradeIdea['status'] }) => {
   return <Badge variant="outline">{status}</Badge>;
 };
 
+const JournalSkeleton = () => (
+    <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+             <Card key={i}>
+                <CardContent className="p-4">
+                    <div className="flex items-center space-x-4">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="space-y-2 flex-1">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-3 w-1/2" />
+                        </div>
+                        <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+                </CardContent>
+            </Card>
+        ))}
+    </div>
+);
 
-export function TradeJournalCard({ journal, className, isGenerating, hideHeader = false, searchQuery }: TradeJournalCardProps) {
+
+export function TradeJournalCard({ journal, className, isGenerating, isLoading, hideHeader = false, searchQuery }: TradeJournalCardProps) {
   const { updateTradeNotes, deleteTrade, updateTradeStatus } = useAppContext();
   const [editingNoteId, setEditingNoteId] = React.useState<string | null>(null);
   const [currentNote, setCurrentNote] = React.useState('');
@@ -99,6 +119,146 @@ export function TradeJournalCard({ journal, className, isGenerating, hideHeader 
     }
   };
 
+  const renderContent = () => {
+    if (isLoading) {
+        return <JournalSkeleton />;
+    }
+
+    if (journal.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 border rounded-lg h-80">
+                <Bot className="h-12 w-12 mb-4" />
+                {searchQuery && searchQuery.length > 0 ? (
+                  <>
+                    <h3 className="text-lg font-semibold text-foreground">No trades found.</h3>
+                    <p>Try searching for a different ticker.</p>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-semibold text-foreground">No saved trades yet.</h3>
+                    <p>Use the generator to create your first AI-powered trade idea.</p>
+                  </>
+                )}
+              </div>
+        );
+    }
+
+    return journal.map((trade) => {
+        const isEditing = editingNoteId === trade.id;
+        return (
+          <AccordionItem value={trade.id} key={trade.id} className="border-b-0">
+            <Card className="overflow-hidden">
+              <AccordionTrigger className="p-4 hover:no-underline hover:bg-muted/50">
+                  <div className="flex flex-1 items-center justify-between gap-4">
+                      <div className='flex items-center gap-3'>
+                          <div className={cn("p-2 rounded-full", trade.direction === 'LONG' ? 'bg-success' : 'bg-destructive-muted')}>
+                              {trade.direction === 'LONG' ? <TrendingUp className="h-5 w-5 text-success-strong" /> : <TrendingDown className="h-5 w-5 text-destructive" />}
+                          </div>
+                          <div>
+                              <p className="font-bold text-base">{trade.ticker}</p>
+                              <p className="text-xs text-muted-foreground">{new Date(trade.timestamp).toLocaleString()}</p>
+                          </div>
+                      </div>
+                      <div className='flex items-center gap-4'>
+                          <Badge variant={trade.direction === 'LONG' ? 'default' : 'destructive'} className={cn(trade.direction === 'LONG' ? "bg-success text-success-foreground" : "bg-destructive-muted text-destructive-muted-foreground")}>{trade.direction}</Badge>
+                          <StatusBadge status={trade.status} />
+                      </div>
+                  </div>
+              </AccordionTrigger>
+              <AccordionContent className="p-4 pt-0">
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <StatItem label="Entry" value={`$${trade.entry.toFixed(2)}`} icon={<TrendingUp size={16}/>} />
+                    <StatItem label="Stop Loss" value={`$${trade.stopLoss.toFixed(2)}`} variant="negative" icon={<Shield size={16}/>}/>
+                    <StatItem label="Confidence" value={`${trade.confidence}%`} icon={<Percent size={16}/>}/>
+                  </div>
+                   <div className="flex flex-col sm:flex-row gap-4">
+                    <StatItem label="Take Profit 1" value={`$${trade.takeProfit1.toFixed(2)}`} variant="positive" icon={<Target size={16}/>}/>
+                    <StatItem label="Take Profit 2" value={`$${trade.takeProfit2.toFixed(2)}`} variant="positive" icon={<Target size={16}/>}/>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2 text-sm flex items-center gap-2"><Bot size={16}/> Rationale</h4>
+                    <p className="text-sm text-muted-foreground bg-background p-3 rounded-lg border">{trade.rationale}</p>
+                  </div>
+
+                   <div>
+                    <h4 className="font-semibold mb-2 text-sm flex items-center gap-2"><Pencil size={16}/> My Thoughts</h4>
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <Textarea
+                          placeholder="Add your thoughts on this trade..."
+                          value={currentNote}
+                          onChange={(e) => setCurrentNote(e.target.value)}
+                          rows={4}
+                          className="text-sm"
+                        />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => handleSaveClick(trade.id)}>
+                            <Check size={16} /> Save
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={handleCancelClick}>
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start justify-between gap-4">
+                        <p className="text-sm text-muted-foreground bg-background p-3 rounded-lg border flex-1 whitespace-pre-wrap min-h-[100px]">
+                          {trade.userNotes || 'Click "Edit" to add your notes.'}
+                        </p>
+                        <Button size="sm" variant="outline" onClick={() => handleEditClick(trade)}>
+                          <Pencil size={16} /> Edit
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between items-center pt-4">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="font-semibold text-muted-foreground">Status:</span>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="w-[150px] justify-between">
+                                    {trade.status} <ChevronDown className="h-4 w-4 opacity-50" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-[150px]">
+                                <DropdownMenuLabel>Set Outcome</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Open')}>
+                                    <Circle className="mr-2 h-4 w-4" />
+                                    <span>Open</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Win')}>
+                                    <CheckCircle2 className="mr-2 h-4 w-4 text-success-strong" />
+                                    <span>Win</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Loss')}>
+                                    <XCircle className="mr-2 h-4 w-4 text-destructive" />
+                                    <span>Loss</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Break-even')}>
+                                    <MinusCircle className="mr-2 h-4 w-4 text-muted-foreground" />
+                                    <span>Break-even</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      <AlertDialogTrigger asChild>
+                          <Button variant="destructive" onClick={() => setTradeToDelete(trade)}>
+                              <Trash2 className="mr-2" />
+                              Delete Trade
+                          </Button>
+                      </AlertDialogTrigger>
+                  </div>
+                </div>
+              </AccordionContent>
+            </Card>
+          </AccordionItem>
+        )
+      })
+  }
+
   return (
     <Card className={cn(className, "flex flex-col")}>
       {!hideHeader && (
@@ -116,150 +276,8 @@ export function TradeJournalCard({ journal, className, isGenerating, hideHeader 
         <AlertDialog>
           <ScrollArea className="h-[600px] pr-4">
             <Accordion type="single" collapsible className="w-full space-y-4" onValueChange={() => setEditingNoteId(null)}>
-              {isGenerating && (
-                  <Card>
-                      <CardContent className="p-6">
-                          <div className="flex items-center space-x-4">
-                              <Skeleton className="h-12 w-12 rounded-full" />
-                              <div className="space-y-2">
-                                  <Skeleton className="h-4 w-[250px]" />
-                                  <Skeleton className="h-4 w-[200px]" />
-                              </div>
-                          </div>
-                      </CardContent>
-                  </Card>
-              )}
-              {journal.length > 0 ? (
-                journal.map((trade) => {
-                  const isEditing = editingNoteId === trade.id;
-                  return (
-                    <AccordionItem value={trade.id} key={trade.id} className="border-b-0">
-                      <Card className="overflow-hidden">
-                        <AccordionTrigger className="p-4 hover:no-underline hover:bg-muted/50">
-                            <div className="flex flex-1 items-center justify-between gap-4">
-                                <div className='flex items-center gap-3'>
-                                    <div className={cn("p-2 rounded-full", trade.direction === 'LONG' ? 'bg-success' : 'bg-destructive-muted')}>
-                                        {trade.direction === 'LONG' ? <TrendingUp className="h-5 w-5 text-success-strong" /> : <TrendingDown className="h-5 w-5 text-destructive" />}
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-base">{trade.ticker}</p>
-                                        <p className="text-xs text-muted-foreground">{new Date(trade.timestamp).toLocaleString()}</p>
-                                    </div>
-                                </div>
-                                <div className='flex items-center gap-4'>
-                                    <Badge variant={trade.direction === 'LONG' ? 'default' : 'destructive'} className={cn(trade.direction === 'LONG' ? "bg-success text-success-foreground" : "bg-destructive-muted text-destructive-muted-foreground")}>{trade.direction}</Badge>
-                                    <StatusBadge status={trade.status} />
-                                </div>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="p-4 pt-0">
-                          <div className="space-y-6">
-                            <div className="flex flex-col sm:flex-row gap-4">
-                              <StatItem label="Entry" value={`$${trade.entry.toFixed(2)}`} icon={<TrendingUp size={16}/>} />
-                              <StatItem label="Stop Loss" value={`$${trade.stopLoss.toFixed(2)}`} variant="negative" icon={<Shield size={16}/>}/>
-                              <StatItem label="Confidence" value={`${trade.confidence}%`} icon={<Percent size={16}/>}/>
-                            </div>
-                             <div className="flex flex-col sm:flex-row gap-4">
-                              <StatItem label="Take Profit 1" value={`$${trade.takeProfit1.toFixed(2)}`} variant="positive" icon={<Target size={16}/>}/>
-                              <StatItem label="Take Profit 2" value={`$${trade.takeProfit2.toFixed(2)}`} variant="positive" icon={<Target size={16}/>}/>
-                            </div>
-                            <div>
-                              <h4 className="font-semibold mb-2 text-sm flex items-center gap-2"><Bot size={16}/> Rationale</h4>
-                              <p className="text-sm text-muted-foreground bg-background p-3 rounded-lg border">{trade.rationale}</p>
-                            </div>
-
-                             <div>
-                              <h4 className="font-semibold mb-2 text-sm flex items-center gap-2"><Pencil size={16}/> My Thoughts</h4>
-                              {isEditing ? (
-                                <div className="space-y-2">
-                                  <Textarea
-                                    placeholder="Add your thoughts on this trade..."
-                                    value={currentNote}
-                                    onChange={(e) => setCurrentNote(e.target.value)}
-                                    rows={4}
-                                    className="text-sm"
-                                  />
-                                  <div className="flex gap-2">
-                                    <Button size="sm" onClick={() => handleSaveClick(trade.id)}>
-                                      <Check size={16} /> Save
-                                    </Button>
-                                    <Button size="sm" variant="ghost" onClick={handleCancelClick}>
-                                      Cancel
-                                    </Button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="flex items-start justify-between gap-4">
-                                  <p className="text-sm text-muted-foreground bg-background p-3 rounded-lg border flex-1 whitespace-pre-wrap min-h-[100px]">
-                                    {trade.userNotes || 'Click "Edit" to add your notes.'}
-                                  </p>
-                                  <Button size="sm" variant="outline" onClick={() => handleEditClick(trade)}>
-                                    <Pencil size={16} /> Edit
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                            <Separator />
-                            <div className="flex justify-between items-center pt-4">
-                                <div className="flex items-center gap-2 text-sm">
-                                  <span className="font-semibold text-muted-foreground">Status:</span>
-                                  <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                          <Button variant="outline" className="w-[150px] justify-between">
-                                              {trade.status} <ChevronDown className="h-4 w-4 opacity-50" />
-                                          </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent className="w-[150px]">
-                                          <DropdownMenuLabel>Set Outcome</DropdownMenuLabel>
-                                          <DropdownMenuSeparator />
-                                          <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Open')}>
-                                              <Circle className="mr-2 h-4 w-4" />
-                                              <span>Open</span>
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Win')}>
-                                              <CheckCircle2 className="mr-2 h-4 w-4 text-success-strong" />
-                                              <span>Win</span>
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Loss')}>
-                                              <XCircle className="mr-2 h-4 w-4 text-destructive" />
-                                              <span>Loss</span>
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onSelect={() => updateTradeStatus(trade.id, 'Break-even')}>
-                                              <MinusCircle className="mr-2 h-4 w-4 text-muted-foreground" />
-                                              <span>Break-even</span>
-                                          </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </div>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" onClick={() => setTradeToDelete(trade)}>
-                                        <Trash2 className="mr-2" />
-                                        Delete Trade
-                                    </Button>
-                                </AlertDialogTrigger>
-                            </div>
-                          </div>
-                        </AccordionContent>
-                      </Card>
-                    </AccordionItem>
-                  )
-                })
-              ) : !isGenerating ? (
-                 <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 border rounded-lg h-80">
-                    <Bot className="h-12 w-12 mb-4" />
-                    {searchQuery && searchQuery.length > 0 ? (
-                      <>
-                        <h3 className="text-lg font-semibold text-foreground">No trades found.</h3>
-                        <p>Try searching for a different ticker.</p>
-                      </>
-                    ) : (
-                      <>
-                        <h3 className="text-lg font-semibold text-foreground">No saved trades yet.</h3>
-                        <p>Use the generator to create your first AI-powered trade idea.</p>
-                      </>
-                    )}
-                  </div>
-              ) : null}
+              {isGenerating && <JournalSkeleton />}
+              {renderContent()}
             </Accordion>
           </ScrollArea>
           <AlertDialogContent>

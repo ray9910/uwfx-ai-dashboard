@@ -8,7 +8,7 @@ import { BookOpen, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 export default function JournalPage() {
-    const { tradeJournal, isGenerating } = useAppContext();
+    const { tradeJournal, isGenerating, isLoadingData } = useAppContext();
     const [searchQuery, setSearchQuery] = React.useState('');
 
     const filteredJournal = tradeJournal.filter(trade =>
@@ -39,7 +39,14 @@ export default function JournalPage() {
                     </div>
                 </header>
                 <main className="flex-1">
-                    <TradeJournalCard journal={filteredJournal} isGenerating={isGenerating} className="h-full" hideHeader searchQuery={searchQuery} />
+                    <TradeJournalCard 
+                        journal={filteredJournal} 
+                        isGenerating={isGenerating}
+                        isLoading={isLoadingData} 
+                        className="h-full" 
+                        hideHeader 
+                        searchQuery={searchQuery} 
+                    />
                 </main>
             </div>
         </div>

@@ -35,7 +35,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
-    const { credits } = useAppContext();
+    const { credits, isLoadingData } = useAppContext();
     const { user, loading, signOut } = useAuth();
 
     React.useEffect(() => {
@@ -92,8 +92,17 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         <Separator className="my-2 bg-sidebar-border" />
                         <div className="px-2 text-sm text-sidebar-foreground/70">
                             <p>Credits</p>
-                            <Progress value={(credits / 15) * 100} className="h-2 mt-1 bg-sidebar-accent" />
-                            <p className="text-xs mt-1">{credits} of 15 remaining</p>
+                            {isLoadingData ? (
+                                <>
+                                    <Skeleton className="h-2 w-full mt-1" />
+                                    <Skeleton className="h-3 w-3/4 mt-2" />
+                                </>
+                            ) : (
+                                <>
+                                    <Progress value={(credits / 15) * 100} className="h-2 mt-1 bg-sidebar-accent" />
+                                    <p className="text-xs mt-1">{credits} of 15 remaining</p>
+                                </>
+                            )}
                         </div>
                         <SidebarMenuButton asChild variant="outline" className="w-full bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90">
                             <a href="https://polar.sh" target="_blank" rel="noopener noreferrer">

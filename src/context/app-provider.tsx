@@ -4,11 +4,26 @@ import * as React from 'react';
 import type { TradeIdea } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { generateIdeaAction } from '@/lib/actions';
+import { useAuth } from './auth-provider';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  doc,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
+  query,
+  orderBy,
+  increment,
+} from 'firebase/firestore';
 
 interface AppContextType {
   tradeJournal: TradeIdea[];
   credits: number;
   isGenerating: boolean;
+  isLoadingData: boolean;
   handleGenerateIdea: (tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string) => Promise<void>;
   updateTradeNotes: (tradeId: string, notes: string) => void;
   deleteTrade: (tradeId: string) => void;
@@ -19,104 +34,87 @@ const AppContext = React.createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [tradeJournal, setTradeJournal] = React.useState<TradeIdea[]>([]);
-  const [credits, setCredits] = React.useState(10);
+  const [credits, setCredits] = React.useState(0);
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [isLoadingData, setIsLoadingData] = React.useState(true);
 
   React.useEffect(() => {
-    try {
-      const storedJournal = localStorage.getItem('uwfx-trade-journal');
-      if (storedJournal) {
-        setTradeJournal(JSON.parse(storedJournal));
-      }
-      const storedCredits = localStorage.getItem('uwfx-user-credits');
-      if (storedCredits) {
-        setCredits(JSON.parse(storedCredits));
-      }
-    } catch (error) {
-      console.error("Failed to read from localStorage", error);
-      localStorage.setItem('uwfx-trade-journal', '[]');
-      localStorage.setItem('uwfx-user-credits', '10');
+    if (user) {
+      setIsLoadingData(true);
+      
+      const userDocRef = doc(db, 'users', user.uid);
+      const unsubscribeCredits = onSnapshot(userDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          setCredits(docSnap.data().credits ?? 0);
+        } else {
+          console.error("User document not found, cannot load credits.");
+        }
+      });
+
+      const journalCollectionRef = collection(db, 'users', user.uid, 'journal');
+      const q = query(journalCollectionRef, orderBy('timestamp', 'desc'));
+      const unsubscribeJournal = onSnapshot(q, (querySnapshot) => {
+        const journalData = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                ...data,
+                id: doc.id,
+                timestamp: data.timestamp?.toDate().toISOString() ?? new Date().toISOString(),
+            } as TradeIdea
+        });
+        setTradeJournal(journalData);
+        setIsLoadingData(false);
+      }, (error) => {
+        console.error("Error fetching journal:", error);
+        setIsLoadingData(false);
+      });
+
+      return () => {
+        unsubscribeCredits();
+        unsubscribeJournal();
+      };
+    } else {
+      // Not logged in
+      setTradeJournal([]);
+      setCredits(0);
+      setIsLoadingData(false);
     }
-  }, []);
+  }, [user]);
 
-  const syncJournalToLocalStorage = (journal: TradeIdea[]) => {
-    try {
-      localStorage.setItem('uwfx-trade-journal', JSON.stringify(journal));
-    } catch (error) {
-      console.error("Failed to write journal to localStorage", error);
-    }
-  };
-
-  const syncCreditsToLocalStorage = (credits: number) => {
-     try {
-      localStorage.setItem('uwfx-user-credits', JSON.stringify(credits));
-    } catch (error) {
-      console.error("Failed to write credits to localStorage", error);
-    }
-  };
-
-  const addTrade = (trade: TradeIdea) => {
-    setTradeJournal((prev) => {
-      const newJournal = [trade, ...prev];
-      syncJournalToLocalStorage(newJournal);
-      return newJournal;
-    });
-  };
-
-  const updateTradeNotes = (tradeId: string, notes: string) => {
-    setTradeJournal(prev => {
-        const newJournal = prev.map(trade => 
-            trade.id === tradeId ? { ...trade, userNotes: notes } : trade
-        );
-        syncJournalToLocalStorage(newJournal);
-        return newJournal;
-    });
+  const updateTradeNotes = async (tradeId: string, notes: string) => {
+    if (!user) return;
+    const tradeDocRef = doc(db, 'users', user.uid, 'journal', tradeId);
+    await updateDoc(tradeDocRef, { userNotes: notes });
+    toast({ title: 'Notes Updated' });
   };
   
-  const updateTradeStatus = (tradeId: string, status: TradeIdea['status']) => {
-    setTradeJournal(prev => {
-      const newJournal = prev.map(trade =>
-        trade.id === tradeId ? { ...trade, status } : trade
-      );
-      syncJournalToLocalStorage(newJournal);
-      return newJournal;
-    });
+  const updateTradeStatus = async (tradeId: string, status: TradeIdea['status']) => {
+    if (!user) return;
+    const tradeDocRef = doc(db, 'users', user.uid, 'journal', tradeId);
+    await updateDoc(tradeDocRef, { status });
     toast({
       title: 'Trade Status Updated',
       description: `The trade status has been set to ${status}.`,
     });
   };
 
-  const deleteTrade = (tradeId: string) => {
-    setTradeJournal(prev => {
-        const newJournal = prev.filter(trade => trade.id !== tradeId);
-        syncJournalToLocalStorage(newJournal);
-        toast({
-          title: 'Trade Deleted',
-          description: 'The trade idea has been removed from your journal.',
-        })
-        return newJournal;
-    });
-  };
-
-  const spendCredit = () => {
-    setCredits((prev) => {
-      const newCredits = Math.max(0, prev - 1);
-      syncCreditsToLocalStorage(newCredits);
-      return newCredits;
-    });
-  };
-  
-  const refundCredit = () => {
-    setCredits((prev) => {
-      const newCredits = prev + 1;
-      syncCreditsToLocalStorage(newCredits);
-      return newCredits;
-    });
+  const deleteTrade = async (tradeId: string) => {
+    if (!user) return;
+    const tradeDocRef = doc(db, 'users', user.uid, 'journal', tradeId);
+    await deleteDoc(tradeDocRef);
+    toast({
+      title: 'Trade Deleted',
+      description: 'The trade idea has been removed from your journal.',
+    })
   };
 
   const handleGenerateIdea = async (tradingStyle: 'Day Trader' | 'Swing Trader', screenshotDataUri: string) => {
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to generate an idea.' });
+        return;
+    }
     if (credits <= 0) {
       toast({
         variant: 'destructive',
@@ -127,35 +125,46 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     
     setIsGenerating(true);
-    spendCredit();
+    const userDocRef = doc(db, 'users', user.uid);
+    await updateDoc(userDocRef, { credits: increment(-1) });
 
     const result = await generateIdeaAction(tradingStyle, screenshotDataUri);
 
     if (result.success && result.data) {
-      const newTrade: TradeIdea = {
+      const journalCollectionRef = collection(db, 'users', user.uid, 'journal');
+      await addDoc(journalCollectionRef, {
         ...result.data,
-        id: crypto.randomUUID(),
         status: 'Open',
-        timestamp: new Date().toISOString(),
-      };
-      addTrade(newTrade);
+        timestamp: serverTimestamp(),
+      });
       toast({
         title: 'New Trading Idea Generated',
         description: `The new idea for ${result.data.ticker} has been added to your journal.`,
       });
     } else {
+      await updateDoc(userDocRef, { credits: increment(1) }); // Refund credit on failure
       toast({
         variant: 'destructive',
         title: 'Generation Failed',
         description: result.error || 'An unknown error occurred.',
       });
-      refundCredit();
     }
     setIsGenerating(false);
   };
 
+  const contextValue = {
+    tradeJournal,
+    credits,
+    isGenerating,
+    isLoadingData,
+    handleGenerateIdea,
+    updateTradeNotes,
+    deleteTrade,
+    updateTradeStatus,
+  };
+
   return (
-    <AppContext.Provider value={{ tradeJournal, credits, isGenerating, handleGenerateIdea, updateTradeNotes, deleteTrade, updateTradeStatus }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );

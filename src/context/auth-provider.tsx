@@ -8,9 +8,10 @@ import {
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword 
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import type { SignUpForm, SignInForm } from '@/types';
+import { doc, setDoc } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
@@ -40,7 +41,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (data: SignUpForm) => {
-    return createUserWithEmailAndPassword(auth, data.email, data.password);
+    const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+    // After user is created in Auth, create their doc in Firestore
+    if (userCredential.user) {
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+            email: userCredential.user.email,
+            credits: 15 // Starting credits
+        });
+    }
+    return userCredential;
   };
 
   const signOut = async () => {

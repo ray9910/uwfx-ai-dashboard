@@ -7,7 +7,7 @@ import { useAppContext } from '@/context/app-provider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export default function DashboardPage() {
-  const { tradeJournal, credits, isGenerating, handleGenerateIdea } = useAppContext();
+  const { tradeJournal, credits, isGenerating, isLoadingData, handleGenerateIdea } = useAppContext();
 
   return (
     <div className="flex flex-col min-h-svh p-4 md:p-6 lg:p-8">
@@ -27,6 +27,7 @@ export default function DashboardPage() {
           <TradeJournalCard
             journal={tradeJournal}
             isGenerating={isGenerating}
+            isLoading={isLoadingData}
           />
         </main>
       </div>
