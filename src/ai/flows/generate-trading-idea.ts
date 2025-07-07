@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -41,38 +42,38 @@ const prompt = ai.definePrompt({
   model: (process.env.GOOGLE_AI_MODEL as any) || 'googleai/gemini-1.5-pro',
   input: {schema: GenerateTradingIdeaInputSchema},
   output: {schema: GenerateTradingIdeaOutputSchema},
-  prompt: `You are an expert trading signal generator and stock market analyst, skilled in technical analysis.
+  prompt: `You are an expert trading signal generator and stock market analyst, skilled in technical analysis. Your goal is to produce high-quality, actionable trading ideas.
 
-Your task is to generate a structured trading idea based *only* on a user-provided chart screenshot.
+Your task is to generate a structured trading idea based *only* on a user-provided chart screenshot. Follow this Chain of Thought process meticulously for maximum accuracy:
 
-Here is your process:
+**Step 1: Identify the Ticker**
+*   Carefully examine the screenshot to find the official stock ticker symbol. This is critical. If you cannot find a ticker, state that in the rationale and do not proceed.
 
-1.  **Identify the official stock ticker symbol from the provided chart screenshot.** This is a critical first step. The ticker is usually clearly visible on the chart.
+**Step 2: Analyze the Market Structure (The "Big Picture")**
+*   **Trend Analysis:** Is the overall trend bullish (higher highs and higher lows), bearish (lower highs and lower lows), or ranging/sideways?
+*   **Key Levels:** Identify major horizontal support and resistance zones. These are areas where price has reacted multiple times in the past.
+*   **Chart Patterns:** Look for larger patterns that define the market structure, such as channels, triangles, wedges, or head and shoulders.
 
-2.  **Perform a detailed technical analysis of the chart screenshot.**
-    *   Identify key support and resistance levels, trendlines, and chart patterns (e.g., head and shoulders, triangles, flags).
-    *   **Pay special attention to candlestick patterns.** Look for formations like dojis, hammers, engulfing patterns, or morning/evening stars that indicate potential reversals or continuations.
+**Step 3: Analyze the Price Action (The "Immediate Picture")**
+*   **Candlestick Patterns:** Scrutinize the most recent candles. Are there any classic reversal or continuation patterns like dojis, hammers, engulfing patterns, or morning/evening stars, especially near your identified key levels?
+*   **Volume Analysis (if visible):** Is there a surge in volume confirming a breakout or a potential reversal? Note this if visible.
 
-3.  **Synthesize your technical analysis to create a cohesive trading idea.** Your rationale must clearly explain how the chart analysis (including candlestick patterns) supports your proposed trade. The idea should be tailored to the "{{{tradingStyle}}}" trading style.
-    *   A "Day Trader" focuses on very short-term price movements. Your price targets and stop loss should be tight.
-    *   A "Swing Trader" aims to capture gains over days or weeks. Your price targets and stop loss can be wider.
+**Step 4: Synthesize and Formulate the Trade Idea**
+*   **Build the Narrative:** Combine your findings from Steps 2 and 3 into a clear, logical story. For example: "The stock is in an overall uptrend and has just pulled back to a key support level. At this level, a bullish engulfing candlestick pattern has formed, suggesting the uptrend is likely to resume."
+*   **Define Trade Parameters:** Based on your narrative, determine the trade direction (LONG or SHORT).
+    *   **Entry:** Propose a specific entry price, typically just above the high of a bullish signal candle or just below the low of a bearish one.
+    *   **Stop Loss:** Place the stop loss at a logical point that would invalidate your idea (e.g., below the key support level or the low of the signal candle for a LONG trade).
+    *   **Take Profit:** Set two realistic take profit targets. TP1 should be at the next minor resistance/support level, and TP2 at the next major one.
+*   **Assign Confidence Score:** Based on how many factors align (e.g., trend, key level, strong candlestick pattern), assign a confidence score from 0-100. A trade with multiple confirming factors should have a higher score.
+*   **Tailor to Trading Style:** Adjust the tightness of your stop loss and take profit levels based on the user's selected trading style: "{{{tradingStyle}}}". Day traders need tighter targets than swing traders.
 
-4.  **Provide your full response in the specified JSON format.** The rationale should be comprehensive, referencing specific chart patterns and candlestick formations.
+**Step 5: Format the Output**
+*   Provide your final, synthesized analysis in the specified JSON format. The rationale must be comprehensive, walking through the logic from your step-by-step analysis.
 
 User-provided screenshot:
 {{media url=screenshotDataUri}}
 
-Provide your response in the following JSON format:
-{
-  "ticker": "<identified_ticker_symbol_from_screenshot>",
-  "direction": "<LONG_or_SHORT>",
-  "entry": <entry_price>,
-  "stopLoss": <stop_loss_price>,
-  "takeProfit1": <take_profit_1_price>,
-  "takeProfit2": <take_profit_2_price>,
-  "confidence": <confidence_score_integer_0_to_100>,
-  "rationale": "<comprehensive_rationale_based_on_technical_analysis>"
-}
+Provide your response in the specified JSON format.
 `,
 });
 
