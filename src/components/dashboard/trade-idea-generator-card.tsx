@@ -127,7 +127,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
               <FormField
                 control={form.control}
                 name="screenshot"
-                render={({ field }) => (
+                render={({ field: { value, onChange, ...fieldProps } }) => (
                   <FormItem>
                     <FormLabel>Upload Chart Screenshot</FormLabel>
                     <FormControl>
@@ -136,11 +136,12 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
                           {screenshotPreview ? <ImageIcon/> : <Upload />}
                         </div>
                         <Input
+                          {...fieldProps}
                           type="file"
                           accept="image/*"
                           className="pl-10 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
                           onChange={(e) => {
-                            field.onChange(e.target.files);
+                            onChange(e.target.files);
                             handleFileChange(e);
                           }}
                         />
