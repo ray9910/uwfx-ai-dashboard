@@ -34,3 +34,12 @@ export type SignInForm = {
     password: string;
 }
 export type SignUpForm = SignInForm;
+
+export type UpdateEmailForm = {
+    email: string;
+}
+
+export type UpdatePasswordForm = {
+    password: string;
+    confirmPassword: string;
+}

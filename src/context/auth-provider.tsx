@@ -6,11 +6,13 @@ import {
     User, 
     signOut as firebaseSignOut, 
     createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword 
+    signInWithEmailAndPassword,
+    updateEmail,
+    updatePassword,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import type { SignUpForm, SignInForm } from '@/types';
+import type { SignUpForm, SignInForm, UpdateEmailForm, UpdatePasswordForm } from '@/types';
 import { doc, setDoc } from 'firebase/firestore';
 
 interface AuthContextType {
@@ -19,6 +21,8 @@ interface AuthContextType {
   signIn: (data: SignInForm) => Promise<any>;
   signUp: (data: SignUpForm) => Promise<any>;
   signOut: () => Promise<void>;
+  updateUserEmail: (data: UpdateEmailForm) => Promise<void>;
+  updateUserPassword: (data: UpdatePasswordForm) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -57,12 +61,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/');
   };
 
+  const updateUserEmail = async (data: UpdateEmailForm) => {
+    if (!auth.currentUser) throw new Error("User not found");
+    await updateEmail(auth.currentUser, data.email);
+  }
+
+  const updateUserPassword = async (data: UpdatePasswordForm) => {
+    if (!auth.currentUser) throw new Error("User not found");
+    await updatePassword(auth.currentUser, data.password);
+  }
+
   const value = {
     user,
     loading,
     signIn,
     signUp,
     signOut,
+    updateUserEmail,
+    updateUserPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

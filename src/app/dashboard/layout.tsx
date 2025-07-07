@@ -20,6 +20,7 @@ import {
   CreditCard,
   BookOpen,
   LogOut,
+  User,
 } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { Separator } from '@/components/ui/separator';
@@ -64,7 +65,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarHeader>
                     <div className="flex items-center gap-2">
                         <Icons.logo className="size-8 text-primary" />
-                        <span className="text-lg font-semibold group-data-[state=collapsed]:hidden">Uwfx AI</span>
+                        <span className="text-lg font-semibold group-data-[state=expanded]:hidden">Uwfx AI</span>
                     </div>
                 </SidebarHeader>
                 <SidebarContent>
@@ -82,6 +83,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                 <Link href="/dashboard/journal">
                                     <BookOpen />
                                     <span>Trade Journal</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={pathname === '/dashboard/profile'} tooltip="Profile">
+                                <Link href="/dashboard/profile">
+                                    <User />
+                                    <span>Profile</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -114,14 +123,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                     <Separator className="my-2 bg-sidebar-border" />
                     <TooltipProvider delayDuration={0}>
                       <div className="flex items-center justify-between gap-3 p-2 group-data-[state=collapsed]:flex-col group-data-[state=collapsed]:gap-2 group-data-[state=collapsed]:items-center">
-                          <div className="flex items-center gap-3">
+                          <Link href="/dashboard/profile" className="flex items-center gap-3">
                               <Avatar className="h-9 w-9">
                                   <AvatarFallback>{user.email?.[0].toUpperCase() ?? 'U'}</AvatarFallback>
                               </Avatar>
                               <div className="group-data-[state=collapsed]:hidden">
                                   <p className="font-semibold text-sm text-sidebar-foreground max-w-[120px] truncate" title={user.email!}>{user.email}</p>
                               </div>
-                          </div>
+                          </Link>
                           <div className="flex items-center group-data-[state=collapsed]:flex-col group-data-[state=collapsed]:gap-2">
                               <Tooltip>
                                   <TooltipTrigger asChild>
