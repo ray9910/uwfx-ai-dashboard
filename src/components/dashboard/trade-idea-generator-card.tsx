@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -25,7 +26,7 @@ import {
 const formSchema = z.object({
   tradingStyle: z.enum(['Day Trader', 'Swing Trader']),
   screenshot: z
-    .custom<FileList>()
+    .any()
     .refine((files) => files?.length === 1, 'A chart screenshot is required.'),
 });
 
@@ -39,7 +40,7 @@ interface TradeIdeaGeneratorCardProps {
 
 export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: TradeIdeaGeneratorCardProps) {
   const { toast } = useToast();
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [screenshotPreview, setScreenshotPreview] = React.useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [formData, setFormData] = React.useState<FormValues | null>(null);
@@ -51,8 +52,6 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
       tradingStyle: 'Swing Trader',
     },
   });
-
-  const screenshotRegister = form.register('screenshot');
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -83,7 +82,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
   const handleConfirmGenerate = () => {
     if (formData && screenshotPreview) {
       onGenerate(formData.tradingStyle, screenshotPreview);
-      form.reset({ tradingStyle: formData.tradingStyle, screenshot: undefined });
+      form.reset();
       if(fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -133,7 +132,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
               <FormField
                 control={form.control}
                 name="screenshot"
-                render={() => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Upload Chart Screenshot</FormLabel>
                     <FormControl>
@@ -142,13 +141,15 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
                           {screenshotPreview ? <ImageIcon/> : <Upload />}
                         </div>
                         <Input
-                           {...screenshotRegister}
-                           ref={fileInputRef}
                           type="file"
                           accept="image/*"
                           className="pl-10 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                          ref={(e) => {
+                            field.ref(e);
+                            fileInputRef.current = e;
+                          }}
                           onChange={(e) => {
-                            screenshotRegister.onChange(e);
+                            field.onChange(e.target.files);
                             handleFileChange(e);
                           }}
                         />
