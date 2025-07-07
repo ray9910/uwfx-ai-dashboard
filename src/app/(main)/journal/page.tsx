@@ -1,3 +1,1 @@
-export default function OldJournalPage() {
-  return null;
-}
+// This file is no longer needed and has been left empty intentionally.
