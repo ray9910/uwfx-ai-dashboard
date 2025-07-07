@@ -86,14 +86,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={pathname === '/dashboard/profile'} tooltip="Profile">
-                                <Link href="/dashboard/profile">
-                                    <User />
-                                    <span>Profile</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarContent>
                 <SidebarFooter>
