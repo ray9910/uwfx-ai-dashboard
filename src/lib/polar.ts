@@ -17,7 +17,7 @@ export async function getProducts(): Promise<PolarProduct[]> {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
             },
-            next: { revalidate: 3600 } // Cache for 1 hour
+            next: { revalidate: 5 } // Cache for 1 hour
         });
 
         if (!response.ok) {
