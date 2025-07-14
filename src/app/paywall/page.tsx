@@ -1,98 +1,127 @@
-
-'use client';
-
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
-import { Check, Loader2 } from 'lucide-react';
-import { useAppContext } from '@/context/app-provider';
+import { Check, X } from 'lucide-react';
+import { getProducts } from '@/lib/polar';
+import type { PolarProduct } from '@/types';
 
-export default function PaywallPage() {
-  const { user, subscriptionStatus, isSubscriptionLoading } = useAuth();
-  const { activateSubscription } = useAppContext();
-  const router = useRouter();
-  const [isLoading, setIsLoading] = React.useState(false);
+// Helper to format price from cents
+const formatPrice = (amount: number, currency: string) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency,
+  }).format(amount / 100);
+};
 
-  React.useEffect(() => {
-    if (!isSubscriptionLoading && subscriptionStatus === 'active') {
-      router.replace('/dashboard');
-    }
-  }, [subscriptionStatus, isSubscriptionLoading, router]);
-
-  const handleSubscribe = async () => {
-    setIsLoading(true);
-    try {
-      await activateSubscription();
-      // The redirect is handled in the activateSubscription function which is now in AppContext
-    } catch (error) {
-      console.error('Failed to activate subscription', error);
-      setIsLoading(false);
-    }
-  };
-  
-  // Show a loading state while we verify subscription status
-  if (isSubscriptionLoading || !user) {
+const ProductCard = ({ product }: { product: PolarProduct }) => {
+    const hasFeatures = product.features && product.features.length > 0;
     return (
-        <div className="flex h-svh w-full items-center justify-center bg-background">
-             <div className="flex flex-col items-center gap-4">
-                <Icons.logo className="size-12 text-primary animate-pulse" />
-                <p className="text-muted-foreground">Verifying Subscription...</p>
-             </div>
-        </div>
+        <Card className="flex flex-col">
+            <CardHeader>
+                <CardTitle>{product.name}</CardTitle>
+                {product.description && (
+                    <CardDescription>{product.description}</CardDescription>
+                )}
+            </CardHeader>
+            <CardContent className="flex-1">
+                <div className="mb-6">
+                    <span className="text-4xl font-bold">{formatPrice(product.price.price_amount, product.price.price_currency)}</span>
+                    <span className="text-sm text-muted-foreground">/ month</span>
+                </div>
+
+                {hasFeatures && (
+                    <>
+                        <h3 className="mb-4 text-sm font-semibold text-muted-foreground uppercase">What's included</h3>
+                        <ul className="space-y-3">
+                            {product.features.map((feature) => (
+                                <li key={feature.id} className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-green-500" />
+                                    <span className="text-sm">{feature.name}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
+            </CardContent>
+            <CardFooter>
+                 <Button className="w-full">
+                    Subscribe
+                </Button>
+            </CardFooter>
+        </Card>
     );
-  }
+};
 
-  // If user is somehow subscribed and lands here, the useEffect will redirect them.
-  // We can return null to avoid a flash of content.
-  if (subscriptionStatus === 'active') {
-    return null; 
-  }
 
-  return (
-    <div className="flex min-h-svh w-full items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader className="text-center">
-            <div className="mx-auto bg-primary/10 text-primary p-3 rounded-full w-fit mb-4">
-                <Icons.logo className="h-8 w-8" />
-            </div>
-          <CardTitle>Unlock Your Trading Potential</CardTitle>
-          <CardDescription>
-            Subscribe to Uwfx AI to get unlimited access to our AI-powered trade idea generator and advanced analytics.
-          </CardDescription>
+const FallbackPricing = () => (
+    <Card>
+        <CardHeader>
+            <CardTitle>Pro Plan</CardTitle>
+            <CardDescription>Get full access to all features.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border bg-secondary/50 p-6">
-            <h3 className="text-lg font-semibold mb-4">Pro Plan Features</h3>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                <span>Unlimited AI Trade Idea Generations</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                <span>Full Access to Trade Journal</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                <span>Advanced Chart Analysis</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                <span>Priority Support</span>
-              </li>
+             <div className="mb-6">
+                <span className="text-4xl font-bold">$10.00</span>
+                <span className="text-sm text-muted-foreground">/ month</span>
+            </div>
+            <ul className="space-y-3">
+                <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-green-500" /> Unlimited AI Generations</li>
+                <li className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-green-500" /> Full Trade Journal Access</li>
             </ul>
-          </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleSubscribe} className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Subscribe Now (Test)
-          </Button>
+            <Button className="w-full">
+                Subscribe
+            </Button>
         </CardFooter>
-      </Card>
+    </Card>
+)
+
+export default async function PaywallPage() {
+    let products: PolarProduct[] = [];
+    let error: string | null = null;
+    
+    try {
+        products = await getProducts();
+    } catch (e: any) {
+        console.error(e.message);
+        error = "Could not load subscription plans. Please try again later.";
+    }
+
+
+  return (
+    <div className="flex min-h-svh w-full flex-col items-center justify-center bg-background p-4">
+        <div className="w-full max-w-4xl">
+            <header className="mb-8 text-center">
+                 <div className="mx-auto mb-4 w-fit rounded-full bg-primary/10 p-3 text-primary">
+                    <Icons.logo className="h-8 w-8" />
+                </div>
+                <h1 className="text-3xl font-bold md:text-4xl">Unlock Your Trading Potential</h1>
+                <p className="mt-2 text-muted-foreground">Choose a plan to get unlimited access to all features.</p>
+            </header>
+            
+            <main>
+                {error ? (
+                     <Card className="flex flex-col items-center justify-center p-8 text-center">
+                        <X className="h-8 w-8 text-destructive mb-4" />
+                        <CardTitle className="text-destructive">An Error Occurred</CardTitle>
+                        <CardDescription>{error}</CardDescription>
+                    </Card>
+                ) : products.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                       {products.map(product => (
+                            <ProductCard key={product.id} product={product} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                        <FallbackPricing />
+                        <FallbackPricing />
+                    </div>
+                )}
+            </main>
+        </div>
     </div>
   );
 }

@@ -11,6 +11,7 @@ export type ChartDataPoint = {
   date: string;
   open: number;
   high: number;
+
   low: number;
   close: number;
   volume: number;
@@ -47,4 +48,21 @@ export type UpdateEmailForm = {
 export type UpdatePasswordForm = {
     password: string;
     confirmPassword: string;
+}
+
+export type PolarProductFeature = {
+    id: string;
+    name: string;
+    description: string | null;
+}
+
+export type PolarProduct = {
+    id: string;
+    name: string;
+    description: string | null;
+    price: {
+        price_currency: string;
+        price_amount: number;
+    };
+    features: PolarProductFeature[];
 }
