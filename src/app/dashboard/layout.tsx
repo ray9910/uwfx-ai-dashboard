@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import Link from 'next/link';
@@ -45,13 +46,13 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             return;
         }
 
-        if (!isSubscriptionLoading && user && subscriptionStatus !== 'active' && pathname !== '/dashboard/paywall') {
-            router.replace('/dashboard/paywall');
+        if (!isSubscriptionLoading && user && subscriptionStatus !== 'active') {
+            router.replace('/paywall');
         }
 
     }, [user, loading, router, subscriptionStatus, isSubscriptionLoading, pathname]);
 
-    if (loading || isSubscriptionLoading || !user) {
+    if (loading || isSubscriptionLoading || !user || subscriptionStatus !== 'active') {
         return (
             <div className="flex h-svh w-full items-center justify-center bg-background">
                  <div className="flex flex-col items-center gap-4">
@@ -60,11 +61,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                  </div>
             </div>
         );
-    }
-    
-    // If user is not subscribed and is not on the paywall page, show nothing until redirect happens.
-    if (subscriptionStatus !== 'active' && pathname !== '/dashboard/paywall') {
-        return null;
     }
 
     return (

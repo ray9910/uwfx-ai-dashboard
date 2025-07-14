@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -17,7 +18,11 @@ import {
   query,
   orderBy,
   increment,
+  writeBatch,
+  getDoc,
 } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+
 
 interface AppContextType {
   tradeJournal: TradeIdea[];
@@ -28,6 +33,7 @@ interface AppContextType {
   updateTradeNotes: (tradeId: string, notes: string) => void;
   deleteTrade: (tradeId: string) => void;
   updateTradeStatus: (tradeId: string, status: TradeIdea['status']) => void;
+  activateSubscription: () => Promise<void>;
 }
 
 const AppContext = React.createContext<AppContextType | null>(null);
@@ -35,6 +41,7 @@ const AppContext = React.createContext<AppContextType | null>(null);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const { user } = useAuth();
+  const router = useRouter();
   const [tradeJournal, setTradeJournal] = React.useState<TradeIdea[]>([]);
   const [credits, setCredits] = React.useState(0);
   const [isGenerating, setIsGenerating] = React.useState(false);
@@ -82,6 +89,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setIsLoadingData(false);
     }
   }, [user]);
+  
+  const activateSubscription = async () => {
+    if (!user) throw new Error("User not found");
+    const userDocRef = doc(db, 'users', user.uid);
+    const batch = writeBatch(db);
+
+    batch.update(userDocRef, {
+        subscriptionStatus: 'active',
+        credits: increment(15), // Add 15 credits on subscription
+    });
+    
+    await batch.commit();
+
+    toast({
+        title: 'Subscription Activated!',
+        description: 'You now have full access and 15 new credits.',
+    });
+    
+    router.push('/dashboard');
+  }
 
   const updateTradeNotes = async (tradeId: string, notes: string) => {
     if (!user) return;
@@ -161,6 +188,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     updateTradeNotes,
     deleteTrade,
     updateTradeStatus,
+    activateSubscription,
   };
 
   return (

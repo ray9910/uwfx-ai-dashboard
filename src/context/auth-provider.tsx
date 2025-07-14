@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -26,7 +27,6 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateUserEmail: (data: UpdateEmailForm) => Promise<void>;
   updateUserPassword: (data: UpdatePasswordForm) => Promise<void>;
-  activateSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -117,15 +117,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await updatePassword(auth.currentUser, data.password);
   }
 
-  const activateSubscription = async () => {
-    if (!user) throw new Error("User not found");
-    const userDocRef = doc(db, 'users', user.uid);
-    await updateDoc(userDocRef, {
-        subscriptionStatus: 'active'
-    });
-    router.push('/dashboard');
-  }
-
   const value = {
     user,
     loading,
@@ -136,7 +127,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     updateUserEmail,
     updateUserPassword,
-    activateSubscription,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
