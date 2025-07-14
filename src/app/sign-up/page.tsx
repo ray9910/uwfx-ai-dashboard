@@ -16,6 +16,7 @@ import { Icons } from '@/components/icons';
 import { Loader2 } from 'lucide-react';
 
 const signUpSchema = z.object({
+  displayName: z.string().min(2, 'Display name must be at least 2 characters long.'),
   email: z.string().email('Please enter a valid email address.'),
   password: z.string().min(8, 'Password must be at least 8 characters long.'),
 });
@@ -63,10 +64,15 @@ export default function SignUpPage() {
             </Link>
           </div>
           <CardTitle>Create an Account</CardTitle>
-          <CardDescription>Enter your email and password to get started</CardDescription>
+          <CardDescription>Enter your details to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="displayName">Display Name</Label>
+              <Input id="displayName" type="text" placeholder="Your Name" {...register('displayName')} />
+              {errors.displayName && <p className="text-sm font-medium text-destructive">{errors.displayName.message}</p>}
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" placeholder="m@example.com" {...register('email')} />

@@ -33,7 +33,12 @@ export type SignInForm = {
     email: string;
     password: string;
 }
-export type SignUpForm = SignInForm;
+
+export type SignUpForm = {
+    displayName: string;
+    email: string;
+    password: string;
+}
 
 export type UpdateEmailForm = {
     email: string;

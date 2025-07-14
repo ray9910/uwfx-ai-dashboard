@@ -9,6 +9,7 @@ import {
     signInWithEmailAndPassword,
     updateEmail,
     updatePassword,
+    updateProfile,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -46,12 +47,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (data: SignUpForm) => {
     const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-    // After user is created in Auth, create their doc in Firestore
-    if (userCredential.user) {
-        await setDoc(doc(db, "users", userCredential.user.uid), {
-            email: userCredential.user.email,
-            credits: 15 // Starting credits
+    const currentUser = userCredential.user;
+    
+    // After user is created in Auth, update their profile and create their doc in Firestore
+    if (currentUser) {
+        // Update Firebase Auth profile
+        await updateProfile(currentUser, {
+            displayName: data.displayName
         });
+
+        // Create user document in Firestore
+        await setDoc(doc(db, "users", currentUser.uid), {
+            displayName: data.displayName,
+            email: currentUser.email,
+            credits: 0, // Starting credits
+            subscriptionStatus: "inactive",
+            planName: null,
+            createdAt: new Date()
+        });
+        
+        // Refresh the user state to include the new profile info
+        setUser({...currentUser, displayName: data.displayName});
     }
     return userCredential;
   };

@@ -119,10 +119,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             <TooltipTrigger asChild>
                                 <Link href="/dashboard/profile" className="flex items-center gap-3">
                                     <Avatar className="h-9 w-9">
-                                        <AvatarFallback>{user.email?.[0].toUpperCase() ?? 'U'}</AvatarFallback>
+                                        <AvatarFallback>{user.displayName?.[0].toUpperCase() ?? user.email?.[0].toUpperCase() ?? 'U'}</AvatarFallback>
                                     </Avatar>
                                     <div className="group-data-[state=collapsed]:hidden">
-                                        <p className="font-semibold text-sm text-sidebar-foreground max-w-[120px] truncate" title={user.email!}>{user.email}</p>
+                                        <p className="font-semibold text-sm text-sidebar-foreground max-w-[120px] truncate" title={user.displayName ?? user.email!}>{user.displayName ?? user.email}</p>
                                     </div>
                                 </Link>
                             </TooltipTrigger>
