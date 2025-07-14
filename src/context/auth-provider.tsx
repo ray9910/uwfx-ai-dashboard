@@ -14,16 +14,19 @@ import {
 import { auth, db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import type { SignUpForm, SignInForm, UpdateEmailForm, UpdatePasswordForm } from '@/types';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isSubscriptionLoading: boolean;
+  subscriptionStatus: string | null;
   signIn: (data: SignInForm) => Promise<any>;
   signUp: (data: SignUpForm) => Promise<any>;
   signOut: () => Promise<void>;
   updateUserEmail: (data: UpdateEmailForm) => Promise<void>;
   updateUserPassword: (data: UpdatePasswordForm) => Promise<void>;
+  activateSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -31,15 +34,42 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSubscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
+
+      if (!user) {
+        setSubscriptionStatus(null);
+        setSubscriptionLoading(false);
+      }
     });
-    return () => unsubscribe();
+    return () => unsubscribeAuth();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      setSubscriptionLoading(true);
+      const userDocRef = doc(db, 'users', user.uid);
+      const unsubscribeFirestore = onSnapshot(userDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          setSubscriptionStatus(docSnap.data().subscriptionStatus ?? 'inactive');
+        } else {
+          setSubscriptionStatus('inactive');
+        }
+        setSubscriptionLoading(false);
+      }, (error) => {
+        console.error("Error fetching user subscription status:", error);
+        setSubscriptionStatus('inactive');
+        setSubscriptionLoading(false);
+      });
+      return () => unsubscribeFirestore();
+    }
+  }, [user]);
 
   const signIn = async (data: SignInForm) => {
      return signInWithEmailAndPassword(auth, data.email, data.password);
@@ -87,14 +117,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await updatePassword(auth.currentUser, data.password);
   }
 
+  const activateSubscription = async () => {
+    if (!user) throw new Error("User not found");
+    const userDocRef = doc(db, 'users', user.uid);
+    await updateDoc(userDocRef, {
+        subscriptionStatus: 'active'
+    });
+    router.push('/dashboard');
+  }
+
   const value = {
     user,
     loading,
+    isSubscriptionLoading,
+    subscriptionStatus,
     signIn,
     signUp,
     signOut,
     updateUserEmail,
     updateUserPassword,
+    activateSubscription,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

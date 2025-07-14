@@ -37,15 +37,21 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
     const { credits, isLoadingData } = useAppContext();
-    const { user, loading, signOut } = useAuth();
+    const { user, loading, signOut, subscriptionStatus, isSubscriptionLoading } = useAuth();
 
     React.useEffect(() => {
         if (!loading && !user) {
             router.replace('/sign-in');
+            return;
         }
-    }, [user, loading, router]);
 
-    if (loading || !user) {
+        if (!isSubscriptionLoading && user && subscriptionStatus !== 'active' && pathname !== '/dashboard/paywall') {
+            router.replace('/dashboard/paywall');
+        }
+
+    }, [user, loading, router, subscriptionStatus, isSubscriptionLoading, pathname]);
+
+    if (loading || isSubscriptionLoading || !user) {
         return (
             <div className="flex h-svh w-full items-center justify-center bg-background">
                  <div className="flex flex-col items-center gap-4">
@@ -56,6 +62,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         );
     }
     
+    // If user is not subscribed and is not on the paywall page, show nothing until redirect happens.
+    if (subscriptionStatus !== 'active' && pathname !== '/dashboard/paywall') {
+        return null;
+    }
+
     return (
         <SidebarProvider>
             <div className="md:hidden p-2 fixed top-0 left-0 z-20">
