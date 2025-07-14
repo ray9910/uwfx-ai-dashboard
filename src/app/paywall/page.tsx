@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,10 +26,12 @@ const ProductCard = ({ product }: { product: PolarProduct }) => {
                 )}
             </CardHeader>
             <CardContent className="flex-1">
-                <div className="mb-6">
-                    <span className="text-4xl font-bold">{formatPrice(product.price.price_amount, product.price.price_currency)}</span>
-                    <span className="text-sm text-muted-foreground">/ month</span>
-                </div>
+                {product.price && (
+                    <div className="mb-6">
+                        <span className="text-4xl font-bold">{formatPrice(product.price.price_amount, product.price.price_currency)}</span>
+                        <span className="text-sm text-muted-foreground">/ month</span>
+                    </div>
+                )}
 
                 {hasFeatures && (
                     <>
