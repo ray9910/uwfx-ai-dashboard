@@ -12,7 +12,7 @@ export async function getProducts(): Promise<PolarProduct[]> {
     }
 
     try {
-        const response = await fetch(`https://api.polar.sh/v1/products?organization_id=${organizationId}&is_recurring=true`, {
+        const response = await fetch(`https://sandbox-api.polar.sh/v1/products?organization_id=${organizationId}&is_recurring=true`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
