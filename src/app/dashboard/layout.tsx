@@ -35,34 +35,51 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname();
     const router = useRouter();
+    const pathname = usePathname();
     const { credits, isLoadingData } = useAppContext();
     const { user, loading, signOut, subscriptionStatus, isSubscriptionLoading } = useAuth();
+    const [isAuthorized, setIsAuthorized] = React.useState(false);
 
     React.useEffect(() => {
-        if (!loading && !user) {
+        // Don't do anything until all auth/sub data is loaded
+        if (loading || isSubscriptionLoading) {
+            return;
+        }
+
+        // If not logged in, redirect to sign-in
+        if (!user) {
             router.replace('/sign-in');
             return;
         }
 
-        if (!isSubscriptionLoading && user && subscriptionStatus !== 'active') {
+        // If logged in but not subscribed, redirect to paywall
+        if (user && subscriptionStatus !== 'active') {
             router.replace('/paywall');
+            return;
+        }
+        
+        // If all checks pass, authorize the user to see the content
+        if (user && subscriptionStatus === 'active') {
+            setIsAuthorized(true);
         }
 
-    }, [user, loading, router, subscriptionStatus, isSubscriptionLoading, pathname]);
+    }, [user, loading, subscriptionStatus, isSubscriptionLoading, router]);
 
-    if (loading || isSubscriptionLoading || !user || subscriptionStatus !== 'active') {
+    // While checks are running, or if redirecting, show a loading state.
+    // This prevents any child components from rendering prematurely.
+    if (!isAuthorized) {
         return (
             <div className="flex h-svh w-full items-center justify-center bg-background">
                  <div className="flex flex-col items-center gap-4">
                     <Icons.logo className="size-12 text-primary animate-pulse" />
-                    <p className="text-muted-foreground">Loading Your Dashboard...</p>
+                    <p className="text-muted-foreground">Verifying Your Access...</p>
                  </div>
             </div>
         );
     }
-
+    
+    // Only render the full dashboard layout if authorized
     return (
         <SidebarProvider>
             <div className="md:hidden p-2 fixed top-0 left-0 z-20">
@@ -172,5 +189,3 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </AppProvider>
     )
 }
-
-    
