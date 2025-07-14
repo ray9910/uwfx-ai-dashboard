@@ -1,11 +1,10 @@
-
 import * as React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
 import { Check, X } from 'lucide-react';
 import { getProducts } from '@/lib/polar';
 import type { PolarProduct } from '@/types';
+import { ProductCard } from '@/components/paywall/product-card';
 
 // Helper to format price from cents
 const formatPrice = (amount: number, currency: string) => {
@@ -15,55 +14,13 @@ const formatPrice = (amount: number, currency: string) => {
   }).format(amount / 100);
 };
 
-const ProductCard = ({ product }: { product: PolarProduct }) => {
-    const hasFeatures = product.features && product.features.length > 0;
-    return (
-        <Card className="flex flex-col">
-            <CardHeader>
-                <CardTitle>{product.name}</CardTitle>
-                {product.description && (
-                    <CardDescription>{product.description}</CardDescription>
-                )}
-            </CardHeader>
-            <CardContent className="flex-1">
-                {product.price && (
-                    <div className="mb-6">
-                        <span className="text-4xl font-bold">{formatPrice(product.price.price_amount, product.price.price_currency)}</span>
-                        <span className="text-sm text-muted-foreground">/ month</span>
-                    </div>
-                )}
-
-                {hasFeatures && (
-                    <>
-                        <h3 className="mb-4 text-sm font-semibold text-muted-foreground uppercase">What's included</h3>
-                        <ul className="space-y-3">
-                            {product.features.map((feature) => (
-                                <li key={feature.id} className="flex items-center gap-2">
-                                    <Check className="h-4 w-4 text-green-500" />
-                                    <span className="text-sm">{feature.name}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-            </CardContent>
-            <CardFooter>
-                 <Button className="w-full">
-                    Subscribe
-                </Button>
-            </CardFooter>
-        </Card>
-    );
-};
-
-
 const FallbackPricing = () => (
-    <Card>
+    <Card className="flex flex-col">
         <CardHeader>
             <CardTitle>Pro Plan</CardTitle>
             <CardDescription>Get full access to all features.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1">
              <div className="mb-6">
                 <span className="text-4xl font-bold">$10.00</span>
                 <span className="text-sm text-muted-foreground">/ month</span>
@@ -74,9 +31,9 @@ const FallbackPricing = () => (
             </ul>
         </CardContent>
         <CardFooter>
-            <Button className="w-full">
-                Subscribe
-            </Button>
+            <div className="w-full text-center text-sm text-muted-foreground">
+                Could not load plan.
+            </div>
         </CardFooter>
     </Card>
 )
@@ -91,7 +48,6 @@ export default async function PaywallPage() {
         console.error(e.message);
         error = "Could not load subscription plans. Please try again later.";
     }
-
 
   return (
     <div className="flex min-h-svh w-full flex-col items-center justify-center bg-background p-4">
@@ -118,8 +74,7 @@ export default async function PaywallPage() {
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                        <FallbackPricing />
+                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                         <FallbackPricing />
                     </div>
                 )}
