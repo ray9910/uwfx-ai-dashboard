@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -62,21 +63,17 @@ export default function DashboardPage() {
               <SummaryStatCard title="Avg Confidence" value={`${avgConfidence}%`} icon={<Target className="h-4 w-4 text-blue-300" />} iconBgColor="bg-blue-500/80" />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="md:col-span-1">
-                <TradeIdeaGeneratorCard
-                    isGenerating={isGenerating}
-                    onGenerate={handleGenerateIdea}
-                    credits={credits}
-                />
-            </div>
-            <div className="md:col-span-2">
-                <TradeJournalCard
-                    journal={tradeJournal}
-                    isGenerating={isGenerating}
-                    isLoading={isLoadingData}
-                />
-            </div>
+          <div className="grid grid-cols-1 gap-8">
+            <TradeIdeaGeneratorCard
+                isGenerating={isGenerating}
+                onGenerate={handleGenerateIdea}
+                credits={credits}
+            />
+            <TradeJournalCard
+                journal={tradeJournal}
+                isGenerating={isGenerating}
+                isLoading={isLoadingData}
+            />
           </div>
       </main>
     </div>
