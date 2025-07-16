@@ -13,7 +13,7 @@ import { BarChart, TrendingUp, TrendingDown, Target } from 'lucide-react';
 import type { TradeIdea } from '@/types';
 
 const SummaryStatCard = ({ title, value, change, icon, iconBgColor }: { title: string; value: string | number; change?: string; icon: React.ReactNode, iconBgColor: string }) => (
-    <Card className="bg-card/80 backdrop-blur-sm border-white/10 shadow-lg">
+    <Card className="bg-card/80 backdrop-blur-sm border-white/10 shadow-lg rounded-xl">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
             <div className={`p-2 rounded-lg ${iconBgColor}`}>

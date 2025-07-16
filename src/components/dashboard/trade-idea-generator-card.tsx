@@ -94,7 +94,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
 
   return (
     <>
-      <Card className="bg-card/80 backdrop-blur-sm border-white/10 shadow-lg h-full flex flex-col">
+      <Card className="bg-card/80 backdrop-blur-sm border-white/10 shadow-lg h-full flex flex-col rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bot className="h-6 w-6" />

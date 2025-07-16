@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -75,7 +76,7 @@ const StatusBadge = ({ status }: { status: TradeIdea['status'] }) => {
 const JournalSkeleton = () => (
     <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
-             <div key={i} className="bg-card/80 p-4 rounded-lg">
+             <div key={i} className="bg-card/80 p-4 rounded-xl">
                 <div className="flex items-center space-x-4">
                     <Skeleton className="h-10 w-10 rounded-full" />
                     <div className="space-y-2 flex-1">
@@ -124,7 +125,7 @@ export function TradeJournalCard({ journal, className, isGenerating, isLoading, 
 
     if (journal.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg h-full min-h-[400px]">
+            <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 border-2 border-dashed rounded-xl h-full min-h-[400px]">
                 <Bot className="h-12 w-12 mb-4" />
                 {searchQuery && searchQuery.length > 0 ? (
                   <>
@@ -145,7 +146,7 @@ export function TradeJournalCard({ journal, className, isGenerating, isLoading, 
         const isEditing = editingNoteId === trade.id;
         return (
           <AccordionItem value={trade.id} key={trade.id} className="border-b-0">
-            <div className="bg-card/80 backdrop-blur-sm border border-white/10 shadow-lg rounded-lg overflow-hidden">
+            <div className="bg-card/80 backdrop-blur-sm border border-white/10 shadow-lg rounded-xl overflow-hidden">
               <AccordionTrigger className="p-4 hover:no-underline hover:bg-white/5 w-full">
                   <div className="flex flex-1 items-center justify-between gap-4">
                       <div className='flex items-center gap-3'>
@@ -258,7 +259,7 @@ export function TradeJournalCard({ journal, className, isGenerating, isLoading, 
   }
 
   return (
-    <Card className={cn(className, "flex flex-col bg-transparent border-0 shadow-none")}>
+    <Card className={cn(className, "flex flex-col rounded-xl bg-card/80 backdrop-blur-sm border-white/10 shadow-lg")}>
       {!hideHeader && (
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl">
