@@ -38,7 +38,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const { credits, isLoadingData } = useAppContext();
-    const { user, loading } = useAuth();
+    const { user, loading, signOut } = useAuth();
     const [isAuthorized, setIsAuthorized] = React.useState(false);
 
     React.useEffect(() => {
