@@ -94,19 +94,19 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
 
   return (
     <>
-      <Card>
+      <Card className="bg-card/80 backdrop-blur-sm border-white/10 shadow-lg h-full flex flex-col">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bot className="h-6 w-6" />
             <span>AI Trade Generator</span>
           </CardTitle>
           <CardDescription>
-            Upload a chart screenshot, select your trading style, and let the AI find your next trade.
+            Upload a chart and let our AI find your next trade.
           </CardDescription>
         </CardHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <CardContent className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1">
+            <CardContent className="space-y-6 flex-1">
               <FormField
                 control={form.control}
                 name="tradingStyle"
@@ -166,11 +166,7 @@ export function TradeIdeaGeneratorCard({ isGenerating, onGenerate, credits }: Tr
                 </div>
               )}
             </CardContent>
-            <CardFooter className="flex-col items-stretch gap-4">
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <CreditCard className="h-4 w-4" />
-                  <span>{credits} Credits Remaining</span>
-                </div>
+            <CardFooter className="flex-col items-stretch gap-4 mt-auto">
               <Button type="submit" className="w-full" disabled={isGenerating || credits <= 0}>
                 {isGenerating ? (
                   <>

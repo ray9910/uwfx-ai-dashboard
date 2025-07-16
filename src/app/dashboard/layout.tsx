@@ -42,32 +42,23 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const [isAuthorized, setIsAuthorized] = React.useState(false);
 
     React.useEffect(() => {
-        // Don't do anything until all auth/sub data is loaded
         if (loading || isSubscriptionLoading) {
             return;
         }
-
-        // If not logged in, redirect to sign-in
         if (!user) {
             router.replace('/sign-in');
             return;
         }
-
-        // If logged in but not subscribed, redirect to paywall
         if (user && subscriptionStatus !== 'active') {
             router.replace('/paywall');
             return;
         }
-        
-        // If all checks pass, authorize the user to see the content
         if (user && subscriptionStatus === 'active') {
             setIsAuthorized(true);
         }
 
     }, [user, loading, subscriptionStatus, isSubscriptionLoading, router]);
 
-    // While checks are running, or if redirecting, show a loading state.
-    // This prevents any child components from rendering prematurely.
     if (!isAuthorized) {
         return (
             <div className="flex h-svh w-full items-center justify-center bg-background">
@@ -79,13 +70,12 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         );
     }
     
-    // Only render the full dashboard layout if authorized
     return (
         <SidebarProvider>
             <div className="md:hidden p-2 fixed top-0 left-0 z-20">
                 <SidebarTrigger />
             </div>
-            <Sidebar collapsible="icon">
+            <Sidebar collapsible="icon" variant="sidebar" side="left">
                 <SidebarHeader>
                     <div className="flex items-center gap-2">
                         <Icons.logo className="size-8 text-primary" />
@@ -113,7 +103,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                     </SidebarMenu>
                 </SidebarContent>
                 <SidebarFooter>
-                    <div className="w-full space-y-2 group-data-[state=collapsed]:hidden">
+                    <div className="w-full space-y-2 group-data-[state=collapsed]:hidden p-2">
                         <Separator className="my-2 bg-sidebar-border" />
                         <div className="px-2 text-sm text-sidebar-foreground/70">
                             <p>Credits</p>
@@ -129,12 +119,12 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                 </>
                             )}
                         </div>
-                        <SidebarMenuButton asChild variant="outline" className="w-full bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90">
+                        <Button variant="outline" className="w-full bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90" asChild>
                             <a href="https://polar.sh" target="_blank" rel="noopener noreferrer">
                                 <CreditCard />
                                 <span>Buy Credits</span>
                             </a>
-                        </SidebarMenuButton>
+                        </Button>
                     </div>
                     <Separator className="my-2 bg-sidebar-border" />
                     <TooltipProvider delayDuration={0}>

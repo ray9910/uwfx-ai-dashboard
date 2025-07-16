@@ -22,7 +22,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></link>
       </head>
       <body className="font-body antialiased">
-        <Script src="https://polar.sh/embed.js" />
+        <Script src="https://js.sandbox.polar.sh/v1/polar.js" />
         <script
             dangerouslySetInnerHTML={{
             __html: `
