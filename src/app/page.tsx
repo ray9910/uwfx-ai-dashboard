@@ -27,11 +27,11 @@ const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; titl
 );
 
 export default function LandingPage() {
-  const { user, loading, subscriptionStatus, isSubscriptionLoading } = useAuth();
+  const { user, loading } = useAuth();
 
   const getDashboardHref = () => {
     if (!user) return '/sign-in';
-    return subscriptionStatus === 'active' ? '/dashboard' : '/paywall';
+    return '/dashboard';
   }
 
   return (
@@ -51,7 +51,7 @@ export default function LandingPage() {
 
           <div className="hidden md:flex items-center space-x-2">
             <ThemeToggle />
-            {loading || isSubscriptionLoading ? (
+            {loading ? (
                 <Skeleton className="h-10 w-32" />
             ) : user ? (
                 <Button asChild>
@@ -105,7 +105,7 @@ export default function LandingPage() {
                   </nav>
                   <div className="mt-auto space-y-4">
                     <ThemeToggle />
-                    {loading || isSubscriptionLoading ? (
+                    {loading ? (
                         <Skeleton className="h-10 w-full" />
                     ) : user ? (
                         <Button asChild className="w-full">

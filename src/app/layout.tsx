@@ -2,7 +2,6 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/context/auth-provider';
-import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'Uwfx - AI',
@@ -22,7 +21,6 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></link>
       </head>
       <body className="font-body antialiased">
-        <Script src="https://js.sandbox.polar.sh/v1/polar.js" />
         <script
             dangerouslySetInnerHTML={{
             __html: `

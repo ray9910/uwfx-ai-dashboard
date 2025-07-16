@@ -33,7 +33,6 @@ interface AppContextType {
   updateTradeNotes: (tradeId: string, notes: string) => void;
   deleteTrade: (tradeId: string) => void;
   updateTradeStatus: (tradeId: string, status: TradeIdea['status']) => void;
-  activateSubscription: () => Promise<void>;
 }
 
 const AppContext = React.createContext<AppContextType | null>(null);
@@ -89,26 +88,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setIsLoadingData(false);
     }
   }, [user]);
-  
-  const activateSubscription = async () => {
-    if (!user) throw new Error("User not found");
-    const userDocRef = doc(db, 'users', user.uid);
-    const batch = writeBatch(db);
-
-    batch.update(userDocRef, {
-        subscriptionStatus: 'active',
-        credits: increment(15), // Add 15 credits on subscription
-    });
-    
-    await batch.commit();
-
-    toast({
-        title: 'Subscription Activated!',
-        description: 'You now have full access and 15 new credits.',
-    });
-    
-    router.push('/dashboard');
-  }
 
   const updateTradeNotes = async (tradeId: string, notes: string) => {
     if (!user) return;
@@ -188,7 +167,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     updateTradeNotes,
     deleteTrade,
     updateTradeStatus,
-    activateSubscription,
   };
 
   return (

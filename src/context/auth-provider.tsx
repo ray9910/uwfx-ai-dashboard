@@ -20,8 +20,6 @@ import { doc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  isSubscriptionLoading: boolean;
-  subscriptionStatus: string | null;
   signIn: (data: SignInForm) => Promise<any>;
   signUp: (data: SignUpForm) => Promise<any>;
   signOut: () => Promise<void>;
@@ -34,42 +32,15 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSubscriptionLoading, setSubscriptionLoading] = useState(true);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
-
-      if (!user) {
-        setSubscriptionStatus(null);
-        setSubscriptionLoading(false);
-      }
     });
     return () => unsubscribeAuth();
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      setSubscriptionLoading(true);
-      const userDocRef = doc(db, 'users', user.uid);
-      const unsubscribeFirestore = onSnapshot(userDocRef, (docSnap) => {
-        if (docSnap.exists()) {
-          setSubscriptionStatus(docSnap.data().subscriptionStatus ?? 'inactive');
-        } else {
-          setSubscriptionStatus('inactive');
-        }
-        setSubscriptionLoading(false);
-      }, (error) => {
-        console.error("Error fetching user subscription status:", error);
-        setSubscriptionStatus('inactive');
-        setSubscriptionLoading(false);
-      });
-      return () => unsubscribeFirestore();
-    }
-  }, [user]);
 
   const signIn = async (data: SignInForm) => {
      return signInWithEmailAndPassword(auth, data.email, data.password);
@@ -79,24 +50,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
     const currentUser = userCredential.user;
     
-    // After user is created in Auth, update their profile and create their doc in Firestore
     if (currentUser) {
-        // Update Firebase Auth profile
         await updateProfile(currentUser, {
             displayName: data.displayName
         });
 
-        // Create user document in Firestore
         await setDoc(doc(db, "users", currentUser.uid), {
             displayName: data.displayName,
             email: currentUser.email,
-            credits: 0, // Starting credits
-            subscriptionStatus: "inactive",
-            planName: null,
+            credits: 15, // Starting credits
             createdAt: new Date()
         });
         
-        // Refresh the user state to include the new profile info
         setUser({...currentUser, displayName: data.displayName});
     }
     return userCredential;
@@ -120,8 +85,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     loading,
-    isSubscriptionLoading,
-    subscriptionStatus,
     signIn,
     signUp,
     signOut,

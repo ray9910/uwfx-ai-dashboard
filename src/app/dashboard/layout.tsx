@@ -38,26 +38,22 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const { credits, isLoadingData } = useAppContext();
-    const { user, loading, signOut, subscriptionStatus, isSubscriptionLoading } = useAuth();
+    const { user, loading } = useAuth();
     const [isAuthorized, setIsAuthorized] = React.useState(false);
 
     React.useEffect(() => {
-        if (loading || isSubscriptionLoading) {
+        if (loading) {
             return;
         }
         if (!user) {
             router.replace('/sign-in');
             return;
         }
-        if (user && subscriptionStatus !== 'active') {
-            router.replace('/paywall');
-            return;
-        }
-        if (user && subscriptionStatus === 'active') {
+        if (user) {
             setIsAuthorized(true);
         }
 
-    }, [user, loading, subscriptionStatus, isSubscriptionLoading, router]);
+    }, [user, loading, router]);
 
     if (!isAuthorized) {
         return (
@@ -120,10 +116,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             )}
                         </div>
                         <Button variant="outline" className="w-full bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90" asChild>
-                            <a href="https://polar.sh" target="_blank" rel="noopener noreferrer">
+                            <Link href="/paywall">
                                 <CreditCard />
                                 <span>Buy Credits</span>
-                            </a>
+                            </Link>
                         </Button>
                     </div>
                     <Separator className="my-2 bg-sidebar-border" />
