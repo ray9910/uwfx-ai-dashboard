@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -8,9 +7,9 @@ import {
     signOut as firebaseSignOut, 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword,
-    updateEmail,
     updatePassword,
     updateProfile,
+    verifyBeforeUpdateEmail,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -74,7 +73,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateUserEmail = async (data: UpdateEmailForm) => {
     if (!auth.currentUser) throw new Error("User not found");
-    await updateEmail(auth.currentUser, data.email);
+    // This sends a verification link to the new email address.
+    // The email will only be updated after the user clicks the link.
+    await verifyBeforeUpdateEmail(auth.currentUser, data.email);
   }
 
   const updateUserPassword = async (data: UpdatePasswordForm) => {

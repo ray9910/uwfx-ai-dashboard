@@ -35,7 +35,7 @@ export default function ProfilePage() {
   const emailForm = useForm<UpdateEmailForm>({
     resolver: zodResolver(updateEmailSchema),
     defaultValues: {
-      email: user?.email ?? '',
+      email: '',
     },
   });
 
@@ -67,9 +67,10 @@ export default function ProfilePage() {
     setIsEmailLoading(true);
     try {
       await updateUserEmail(data);
+      emailForm.reset();
       toast({
-        title: 'Email Updated',
-        description: 'Your email has been successfully updated.',
+        title: 'Verification Email Sent',
+        description: `A link to verify your new email has been sent to ${data.email}. Please click the link to finalize the change.`,
       });
     } catch (error) {
       handleAuthError(error);
@@ -113,7 +114,7 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><User className="h-5 w-5" /> Change Email</CardTitle>
-              <CardDescription>Update the email address associated with your account.</CardDescription>
+              <CardDescription>Enter a new email and we'll send a verification link to confirm the change.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
