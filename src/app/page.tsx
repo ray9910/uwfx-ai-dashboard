@@ -54,7 +54,7 @@ export default function LandingPage() {
             {loading ? (
                 <Skeleton className="h-10 w-32" />
             ) : user ? (
-                <Button asChild>
+                <Button asChild className="rounded-full">
                   <Link href={getDashboardHref()}>
                     Go to Dashboard <ChevronRight className="ml-2 h-4 w-4" />
                   </Link>
@@ -205,5 +205,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
