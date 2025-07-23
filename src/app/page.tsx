@@ -64,7 +64,7 @@ export default function LandingPage() {
                 <Button variant="ghost" asChild>
                     <Link href="/sign-in">Sign In</Link>
                 </Button>
-                <Button asChild>
+                <Button asChild className="rounded-full">
                     <Link href="/sign-up">Get Started</Link>
                 </Button>
                 </>
@@ -138,7 +138,7 @@ export default function LandingPage() {
                 <p className="max-w-xl mx-auto text-lg md:text-xl text-muted-foreground mb-10">
                 Stop guessing, start winning. Let our AI analyze charts and generate high-probability trade ideas for you.
                 </p>
-                <Button size="lg" asChild>
+                <Button size="lg" asChild className="rounded-full">
                 <Link href="/sign-up">
                     Get Started for Free
                 </Link>
