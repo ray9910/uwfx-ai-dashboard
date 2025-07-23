@@ -175,7 +175,7 @@ export default function LandingPage() {
           </div>
         </section>
         
-        <section id="pricing" className="py-20 md:py-32">
+        <section id="pricing" className="py-20 md:py-32 flex items-center justify-center">
             <div className="container max-w-md text-center">
                  <h2 className="text-3xl md:text-4xl font-bold">Simple, Transparent Pricing</h2>
                 <p className="text-muted-foreground mt-4 mb-8">
