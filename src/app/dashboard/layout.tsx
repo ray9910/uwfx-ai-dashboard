@@ -38,24 +38,15 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const { credits, isLoadingData } = useAppContext();
-    const { user, loading, signOut } = useAuth();
-    const [isAuthorized, setIsAuthorized] = React.useState(false);
-
+    const { user, loading } = useAuth();
+    
     React.useEffect(() => {
-        if (loading) {
-            return;
-        }
-        if (!user) {
+        if (!loading && !user) {
             router.replace('/sign-in');
-            return;
         }
-        if (user) {
-            setIsAuthorized(true);
-        }
-
     }, [user, loading, router]);
 
-    if (!isAuthorized) {
+    if (loading || !user) {
         return (
             <div className="flex h-svh w-full items-center justify-center bg-background">
                  <div className="flex flex-col items-center gap-4">
